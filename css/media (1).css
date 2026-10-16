@@ -19,7 +19,8 @@ body{
     }
     .level1,
     .level2,
-    .level3{
+    .level3,
+    [class^="part"]{
         grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     }
 }
@@ -68,6 +69,9 @@ body{
         padding: 30px 15px 40px;
         gap: 18px;
     }
+    [class^="part"]{
+        gap: 18px;
+    }
 }
 
 /* ============ تابلت عمودي (لحد 768px) ============ */
@@ -102,6 +106,8 @@ body{
     }
     aside{
         position: static;
+        max-height: none;
+        overflow: visible;
         width: 100%;
         flex-direction: row;
         flex-wrap: wrap;
@@ -127,6 +133,36 @@ body{
         flex: none;
         width: 100%;
         padding: 10px 15px 30px;
+    }
+
+    /* الصفحات اللي فيها قايمة تحت السنين: السنين تحت بعض بعرض الصفحة، والقايمة تتفتح تحت السنة */
+    aside:has(.sub4){
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        justify-content: flex-start;
+    }
+    aside:has(.sub4) .child4,
+    aside:has(.sub4) .child6,
+    aside:has(.sub4) .child8{
+        flex: none;
+        width: 100%;
+        max-width: none;
+    }
+    .sub4,
+    .sub6,
+    .sub8{
+        flex-direction: row;
+        flex-wrap: wrap;
+        margin-inline-start: 0;
+        padding-inline-start: 0;
+        border-inline-start: none;
+    }
+    .child11{
+        flex: 1 1 40%;
+        width: auto;
+        text-align: center;
+        border-color: var(--line);
     }
 }
 
@@ -228,6 +264,13 @@ body{
         grid-template-columns: 1fr;
         gap: 20px;
         padding: 10px 12px 30px;
+    }
+    [class^="part"]{
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .child11{
+        font-size: 15px;
     }
 }
 

@@ -307,6 +307,8 @@ aside{
     align-self: flex-start;
     position: sticky;
     top: 83px;
+    max-height: calc(100vh - 83px);
+    overflow-y: auto;
 }
 .child10{
     width: 100%;
@@ -328,6 +330,61 @@ aside{
     background: var(--dark);
     color: #fff;
     border-color: var(--dark);
+}
+/* سهم صغير على الزرار اللي ليه قايمة (بيلف لما القايمة تفتح) */
+.child10[aria-expanded]::after{
+    content: '\F229';
+    font-family: 'bootstrap-icons';
+    font-weight: normal;
+    display: inline-block;
+    font-size: 15px;
+    margin-inline-start: 8px;
+    transition: transform 0.3s;
+}
+.child10[aria-expanded="true"]::after{
+    transform: rotate(180deg);
+}
+
+/* القايمة اللي بتفتح تحت كل سنة (النحو - الأدب - النصوص ...) */
+.child4,
+.child6,
+.child8{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.sub4,
+.sub6,
+.sub8{
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-inline-start: 14px;
+    padding-inline-start: 12px;
+    border-inline-start: 2px solid var(--line);
+}
+.child11{
+    width: 100%;
+    background: transparent;
+    font-size: 17px;
+    font-weight: bold;
+    color: var(--text);
+    cursor: pointer;
+    border: 2px solid transparent;
+    padding: 8px 11px;
+    border-radius: 12px;
+    text-align: start;
+    transition: background 0.3s, color 0.3s, border-color 0.3s;
+}
+.child11:hover{
+    background: #fff;
+    border-color: var(--line);
+}
+/* القسم المختار دلوقتي */
+.child11[aria-pressed="true"]{
+    background: var(--gold);
+    color: #fff;
+    border-color: var(--gold);
 }
 .line{
     width: 2px;
@@ -353,11 +410,20 @@ aside{
 .level3{
     display: none;
 }
+/* كل قسم جوه السنة (part4_1 = أول سنة / أول قسم) بياخد الصف كله وجواه شبكة الفيديوهات */
+[class^="part"]{
+    display: none;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+    align-content: start;
+}
 
 /* كارت الفيديو (أي div جوه المستوى بياخد الشكل ده تلقائي) */
-.level1 > div,
-.level2 > div,
-.level3 > div{
+.level1 > div:not([class^="part"]),
+.level2 > div:not([class^="part"]),
+.level3 > div:not([class^="part"]),
+[class^="part"] > div{
     background: #fff;
     border: 2px solid var(--line);
     border-radius: 14px;
@@ -365,9 +431,10 @@ aside{
     box-shadow: 0 4px 12px rgba(7, 37, 29, 0.06);
     transition: transform 0.3s, box-shadow 0.3s;
 }
-.level1 > div:hover,
-.level2 > div:hover,
-.level3 > div:hover{
+.level1 > div:not([class^="part"]):hover,
+.level2 > div:not([class^="part"]):hover,
+.level3 > div:not([class^="part"]):hover,
+[class^="part"] > div:hover{
     transform: translateY(-3px);
     box-shadow: 0 10px 20px rgba(7, 37, 29, 0.12);
 }
