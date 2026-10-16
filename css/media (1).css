@@ -1,0 +1,250 @@
+/* =====================================================
+   media (1).css
+   لازم يتحمّل بعد plat.css (زي ما هو عندك في الـ HTML)
+   الـ plat.css بيظبط نفسه تلقائي (clamp / grid / wrap)
+   وهنا بس التعديلات اللي محتاجة نقطة كسر (breakpoint)
+   ===================================================== */
+
+html{
+    -webkit-text-size-adjust: 100%;
+}
+body{
+    overflow-x: hidden;    /* يمنع السكرول الأفقي */
+}
+
+/* ============ شاشات كبيرة جدًا (1600px وأكتر) ============ */
+@media (min-width: 1600px){
+    .child10{
+        font-size: 23px;
+    }
+    .level1,
+    .level2,
+    .level3{
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    }
+}
+
+/* ============ لابتوب صغير (لحد 1200px) ============ */
+@media (max-width: 1200px){
+    .logo{
+        width: 30%;
+    }
+    .start_1{
+        width: 65%;
+        gap: 10px;
+    }
+    .link{
+        font-size: 18px;
+    }
+    .child10{
+        font-size: 19px;
+    }
+    aside{
+        padding-right: 25px;
+    }
+}
+
+/* ============ تابلت أفقي (لحد 992px) ============ */
+@media (max-width: 992px){
+    .logo{
+        width: 28%;
+    }
+    .start_1{
+        width: 72%;
+    }
+    .link{
+        font-size: 17px;
+    }
+    aside{
+        width: 26%;
+        padding: 30px 15px 30px 10px;
+    }
+    .child10{
+        font-size: 17px;
+    }
+    .level1,
+    .level2,
+    .level3{
+        padding: 30px 15px 40px;
+        gap: 18px;
+    }
+}
+
+/* ============ تابلت عمودي (لحد 768px) ============ */
+@media (max-width: 768px){
+    .logo{
+        width: 30%;
+    }
+    .start_1{
+        width: 70%;
+        gap: 5px;
+    }
+    .link{
+        font-size: 15px;
+    }
+    .link::before{
+        margin-inline-end: 5px;
+    }
+    .text_3,
+    .text_5,
+    .text_7{
+        font-size: 20px;
+    }
+    .text_4,
+    .text_6,
+    .text_8{
+        font-size: 15px;
+    }
+
+    /* صفحات المستويات: الأزرار فوق والفيديوهات تحتها */
+    .parent{
+        flex-direction: column;
+    }
+    aside{
+        position: static;
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        padding: 20px 15px 10px;
+    }
+    .child4,
+    .child6,
+    .child8{
+        flex: 1 1 150px;
+        max-width: 240px;
+    }
+    .line{
+        width: 90%;
+        height: 2px;
+        margin: 10px auto;
+        align-self: center;
+    }
+    .level1,
+    .level2,
+    .level3{
+        flex: none;
+        width: 100%;
+        padding: 10px 15px 30px;
+    }
+}
+
+/* ============ موبايل (لحد 576px) ============ */
+@media (max-width: 576px){
+    /* النافبار: اللوجو فوق واللينكات تحته */
+    nav{
+        position: static;
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+        padding: 8px 0;
+    }
+    .logo{
+        width: 100%;
+        height: auto;
+    }
+    .img_adh{
+        width: 100%;
+        max-width: 300px;
+        height: auto;
+        margin: 0 auto;
+        object-position: center;
+    }
+    .start_1{
+        width: 100%;
+        gap: 0;
+        padding-top: 8px;
+        justify-content: space-around;
+    }
+    .link{
+        font-size: 14px;
+    }
+
+    /* الصفحة الرئيسية */
+    .img_wel{
+        max-height: 260px;
+        object-fit: cover;
+    }
+    .text_2{
+        font-size: 14px;
+    }
+    .phase{
+        flex-direction: column;
+        align-items: center;
+    }
+    .child1,
+    .child2,
+    .child3{
+        flex: none;
+        width: 100%;
+        max-width: 380px;
+        padding: 22px;
+    }
+    /* صور مادة اللغة العربية: شبكة منظمة بدل التبعثر */
+    .arab{
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+        justify-items: center;
+        align-items: center;
+    }
+    .arab > div{
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+    /* أول صورة (البانر) تاخد الصف كله */
+    .arab > div:first-child{
+        grid-column: 1 / -1;
+    }
+    #img_1,
+    .img_6{
+        width: 100%;
+        max-width: 200px;
+    }
+    #img_1{
+        max-width: 280px;
+    }
+
+    /* صفحات المستويات */
+    aside{
+        gap: 10px;
+    }
+    .child4,
+    .child6,
+    .child8{
+        flex: 1 1 130px;
+        max-width: none;
+    }
+    .child10{
+        font-size: 15px;
+        padding: 9px 8px;
+        border-radius: 14px;
+    }
+    .level1,
+    .level2,
+    .level3{
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 10px 12px 30px;
+    }
+}
+
+/* ============ موبايلات صغيرة (لحد 380px) ============ */
+@media (max-width: 380px){
+    .link{
+        font-size: 13px;
+    }
+    .link::before{
+        margin-inline-end: 3px;
+    }
+    .text_3,
+    .text_5,
+    .text_7{
+        font-size: 18px;
+    }
+    .child10{
+        font-size: 14px;
+    }
+}
