@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
+  <rect width="400" height="300" fill="#f5efe6"/>
+  <rect x="12" y="12" width="376" height="276" rx="16" fill="none" stroke="#c5a25d" stroke-width="3" stroke-dasharray="10 8"/>
+  <g transform="translate(170 70)" fill="none" stroke="#b2833b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M10 0h40l20 20v80a10 10 0 0 1-10 10H10a10 10 0 0 1-10-10V10A10 10 0 0 1 10 0z"/>
+    <path d="M50 0v20h20"/>
+    <path d="M16 48h38M16 66h38M16 84h24"/>
+  </g>
+  <text x="200" y="215" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="24" font-weight="bold" fill="#1D332B">مكان صورة الامتحان</text>
+  <text x="200" y="245" text-anchor="middle" font-family="Cairo, Arial, sans-serif" font-size="15" fill="#555e5a">استبدلها بصورتك</text>
+</svg>
