@@ -6,6 +6,9 @@
 
     var STAGES = { primary: "ابتدائي", prep: "إعدادي", secondary: "ثانوي" };
     var GRADES = ["", "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
+    var MONTHS = ["", "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+    var KINDS = { session: "امتحان حصة", month: "امتحان شهر" };
+    var LETTERS = ["أ", "ب", "ج", "د", "هـ"];
 
     async function call(method, path, body) {
         var opts = { method: method, credentials: "include", headers: {} };
@@ -52,6 +55,29 @@
     function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
     function num(n) { return Number(n).toLocaleString("ar-EG"); }
     function courseLabel(c) { return (STAGES[c.stage] || c.stage) + " - الصف " + (GRADES[c.grade] || c.grade); }
+    function placeLabel(stage, grade) { return stage && grade ? courseLabel({ stage: stage, grade: grade }) : "غير محدد"; }
+    function examWhen(e) { return e.kind === "month" ? "امتحان شهر " + (MONTHS[e.month] || "") : "امتحان حصة"; }
+
+    // رفع ملف خام (صورة / PDF). السيرفر بيتعرّف على نوعه من محتواه مش من اسمه.
+    async function upload(method, path, file) {
+        var headers = { "Content-Type": "application/octet-stream" };
+        if (csrf) headers["X-CSRF-Token"] = csrf;
+        var res;
+        try { res = await fetch(BASE + path, { method: method, credentials: "include", headers: headers, body: file }); }
+        catch (e) { throw { code: "NETWORK", status: 0, message: "مش قادر أوصل للسيرفر. اتأكد من النت وجرّب تاني." }; }
+        var json = null; try { json = await res.json(); } catch (e) { /* */ }
+        if (!res.ok || !json || json.ok === false) {
+            var err = (json && json.error) || { code: "HTTP_" + res.status, message: "فشل رفع الملف" };
+            err.status = res.status; throw err;
+        }
+        return json.data;
+    }
+    // بيجيب ملف محمي (بالكوكي) ويرجّعه كرابط مؤقت يتحط في img أو iframe
+    async function blobUrl(path) {
+        var res = await fetch(BASE + path, { credentials: "include" });
+        if (!res.ok) throw { status: res.status, message: "مقدرتش أحمّل الملف" };
+        return URL.createObjectURL(await res.blob());
+    }
 
     // رسالة صغيرة بتظهر فوق وتختفي لوحدها
     function toast(msg, kind) {
@@ -86,7 +112,8 @@
     }
 
     window.Eladham = {
-        STAGES: STAGES, GRADES: GRADES,
+        STAGES: STAGES, GRADES: GRADES, MONTHS: MONTHS, KINDS: KINDS, LETTERS: LETTERS,
+        placeLabel: placeLabel, examWhen: examWhen, upload: upload, blobUrl: blobUrl,
         call: call, h: h, clear: clear, num: num, courseLabel: courseLabel, toast: toast, confirmBox: confirmBox,
         setCsrf: function (t) { csrf = t; },
         loadSession: loadSession,

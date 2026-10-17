@@ -48,6 +48,7 @@
             box.appendChild(h("h2", { class: "ac_h2", text: "كورساتي" }));
             if (!mine.length) box.appendChild(h("p", { class: "ac_empty", text: "لسه مفيش كورسات مفعّلة على حسابك. كلّم المدرس عشان يفعّلها." }));
             else box.appendChild(h("div", { class: "ac_grid" }, mine.map(courseCard)));
+            root.appendChild(await examsCard());
             if (others.length) {
                 var more = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "كورسات تانية متاحة" }),
                     h("p", { class: "ac_sub", text: "كلّم المدرس لو عايز تشترك فيها." }),
@@ -55,6 +56,43 @@
                 root.appendChild(more);
             }
         } catch (e) { E.clear(box); box.appendChild(h("p", { class: "ac_msg", text: e.message })); }
+    }
+
+    // ---------- الامتحانات ----------
+    async function examsCard() {
+        var card = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "الامتحانات" }), h("p", { class: "ac_empty", text: "جاري التحميل..." })]);
+        try {
+            var d = await E.call("GET", "/api/exams");
+            E.clear(card);
+            card.appendChild(h("h2", { class: "ac_h2", text: "الامتحانات" }));
+            if (!d.exams.length) { card.appendChild(h("p", { class: "ac_empty", text: "مفيش امتحانات متاحة لصفك دلوقتي." })); return card; }
+            var groups = [], seen = {};
+            d.exams.forEach(function (x) {
+                var key = x.kind === "month" ? "m" + x.month : "s";
+                if (!seen[key]) { seen[key] = { title: x.kind === "month" ? "امتحانات شهر " + E.MONTHS[x.month] : "امتحانات الحصة", items: [], order: x.kind === "month" ? 100 + x.month : 0 }; groups.push(seen[key]); }
+                seen[key].items.push(x);
+            });
+            groups.sort(function (a, b) { return a.order - b.order; });
+            groups.forEach(function (g) {
+                card.appendChild(h("h3", { class: "ac_group_t", text: g.title }));
+                card.appendChild(h("div", { class: "ac_grid" }, g.items.map(examCard)));
+            });
+        } catch (e) { E.clear(card); card.appendChild(h("p", { class: "ac_msg", text: e.message })); }
+        return card;
+    }
+    function examCard(x) {
+        var kids = [];
+        if (x.hasCover) {
+            var img = h("img", { class: "ac_cover", alt: "", loading: "lazy" });
+            E.blobUrl("/api/exams/" + x.id + "/cover").then(function (u) { img.src = u; }, function () { img.remove(); });
+            kids.push(img);
+        }
+        kids.push(h("span", { class: "ac_course_t", text: x.title }));
+        if (x.description) kids.push(h("span", { class: "ac_course_m", text: x.description }));
+        kids.push(h("span", { class: "ac_course_m", text: E.num(x.questionCount) + " سؤال" }));
+        if (x.attemptsUsed) kids.push(h("span", { class: "ac_pill p_ok", text: "أعلى درجة: " + E.num(x.bestScore) + " / " + E.num(x.questionCount) }));
+        else kids.push(h("span", { class: "ac_pill", text: "لسه ما اتحلش" }));
+        return h("a", { class: "ac_course", href: "paper.html?id=" + encodeURIComponent(x.id), style: "text-decoration:none" }, kids);
     }
 
     function courseCard(c) {

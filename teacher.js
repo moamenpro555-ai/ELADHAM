@@ -13,11 +13,23 @@
     async function run(fn) {
         try { return await fn(); } catch (e) { E.toast(e.message || "حصل خطأ", "bad"); return undefined; }
     }
+    var ui = window.TeacherUI = { run: run, views: {}, E: E };
     function field(label, id, control) { return [h("label", { for: id, text: label }), control]; }
     function option(value, text, sel) { return h("option", { value: String(value), text: text, selected: sel ? true : false }); }
     function stageSelect(id, val) { return h("select", { id: id }, Object.keys(E.STAGES).map(function (k) { return option(k, E.STAGES[k], k === val); })); }
     function gradeSelect(id, val) { return h("select", { id: id }, [1, 2, 3, 4, 5, 6].map(function (g) { return option(g, "الصف " + E.GRADES[g], g === val); })); }
     function fmtDate(s) { return s ? new Date(s).toLocaleDateString("ar-EG") : "-"; }
+    // المرحلة والصف للامتحانات والطلاب: إعدادي وثانوي، من أولى لتالتة
+    function placeStage(id, val, blank) {
+        var opts = blank ? [option("", "المرحلة؟", !val)] : [];
+        return h("select", { id: id }, opts.concat(["prep", "secondary"].map(function (k) { return option(k, E.STAGES[k], k === val); })));
+    }
+    function placeGrade(id, val, blank) {
+        var opts = blank ? [option("", "الصف؟", !val)] : [];
+        return h("select", { id: id }, opts.concat([1, 2, 3].map(function (g) { return option(g, "الصف " + E.GRADES[g], g === val); })));
+    }
+    ui.field = field; ui.option = option; ui.fmtDate = fmtDate; ui.placeStage = placeStage; ui.placeGrade = placeGrade;
+    ui.getBody = function () { return body; };
     function copyBtn(text) {
         return h("button", { type: "button", class: "ac_btn b_line b_sm", text: "نسخ", onclick: function () {
             if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { E.toast("اتنسخ"); }, function () { E.toast("انسخه يدويًا", "bad"); });
@@ -37,7 +49,7 @@
             ]),
             (function () { return (pw = h("div", { class: "ac_hidden" }, [E.passwordForm({})])); })()
         ]));
-        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"]].map(function (t) {
+        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
             return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(tab === t[0]), text: t[1], onclick: function () { tab = t[0]; render(); } });
         }));
         root.appendChild(tabs);
@@ -48,7 +60,9 @@
 
     async function render() {
         shell();
-        if (tab === "courses") await coursesView(); else await studentsView();
+        if (tab === "courses") await coursesView();
+        else if (tab === "students") await studentsView();
+        else if (ui.views[tab]) await ui.views[tab]();
     }
 
     // ================= الكورسات =================
@@ -245,7 +259,7 @@
         var card = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "الطلاب (" + E.num(students.length) + ")" }), search]);
         if (!students.length) card.appendChild(h("p", { class: "ac_empty", text: query ? "مفيش نتايج." : "لسه مفيش طلاب. ضيف أول طالب من النموذج اللي فوق." }));
         else card.appendChild(h("div", { class: "ac_tablewrap" }, [h("table", { class: "ac_table" }, [
-            h("thead", null, [h("tr", null, ["الاسم", "الإيميل", "الحالة", "كورسات", "دروس مكتملة", "آخر نشاط", ""].map(function (t) { return h("th", { text: t }); }))]),
+            h("thead", null, [h("tr", null, ["الاسم", "الإيميل", "المرحلة والصف", "الحالة", "كورسات", "دروس مكتملة", "آخر نشاط", ""].map(function (t) { return h("th", { text: t }); }))]),
             h("tbody", null, students.map(studentRow))
         ])]));
         body.appendChild(card);
@@ -253,7 +267,7 @@
 
     function studentRow(s) {
         return h("tr", null, [
-            h("td", { text: s.name }), h("td", { text: s.email, dir: "ltr" }),
+            h("td", { text: s.name }), h("td", { text: s.email, dir: "ltr" }), h("td", null, [placeCell(s)]),
             h("td", null, [h("span", { class: "ac_pill " + (s.isActive ? "p_ok" : "p_bad"), text: s.isActive ? "نشط" : "موقوف" }), s.mustChangePassword ? h("span", { class: "ac_pill", text: "لسه مغيّرش كلمة السر", style: "margin-inline-start:6px" }) : null]),
             h("td", { text: E.num(s.courseCount) }), h("td", { text: E.num(s.completedLessons) }), h("td", { text: fmtDate(s.lastActivity) }),
             h("td", null, [h("div", { class: "ac_row" }, [
@@ -273,6 +287,17 @@
         ]);
     }
 
+    function placeCell(s) {
+        var st = placeStage("pl_s_" + s.id, s.stage, true), gr = placeGrade("pl_g_" + s.id, s.grade, true);
+        st.setAttribute("aria-label", "مرحلة " + s.name); gr.setAttribute("aria-label", "صف " + s.name);
+        async function save() {
+            if (!st.value || !gr.value) return;
+            await run(async function () { await E.call("PATCH", "/api/teacher/students/" + s.id, { stage: st.value, grade: Number(gr.value) }); s.stage = st.value; s.grade = Number(gr.value); E.toast("اتحفظ صف " + s.name); });
+        }
+        st.addEventListener("change", save); gr.addEventListener("change", save);
+        return h("div", { class: "ac_row" }, [st, gr]);
+    }
+
     function secretBox(text, value) {
         return h("div", { class: "ac_card" }, [h("p", { class: "ac_h2", text: text }), h("div", { class: "ac_secret" }, [h("code", { text: value })]),
             h("div", { class: "ac_row", style: "margin-top:10px" }, [copyBtn(value), h("span", { class: "ac_sub", text: "بيظهر مرة واحدة بس. لو قفلت الصفحة هتعمل واحد جديد." })])]);
@@ -281,6 +306,7 @@
     function studentForm() {
         var name = h("input", { id: "sf_name", maxlength: "120" });
         var email = h("input", { id: "sf_email", type: "email", dir: "ltr", maxlength: "254", autocomplete: "off" });
+        var stg = placeStage("sf_stage", "", true), grd = placeGrade("sf_grade", 0, true);
         var pass = h("input", { id: "sf_pass", type: "text", dir: "ltr", maxlength: "128", autocomplete: "off", placeholder: "سيبها فاضية وهيتولّد باسورد مؤقت" });
         var msg = h("p", { class: "ac_msg", role: "alert" });
         var checks = courses.map(function (c) {
@@ -289,6 +315,7 @@
         });
         var form = h("form", { class: "ac_form", novalidate: true }, [].concat(
             field("اسم الطالب", "sf_name", name), field("إيميل الطالب (هو اسم المستخدم)", "sf_email", email),
+            field("المرحلة (علشان يشوف امتحانات صفه)", "sf_stage", stg), field("الصف", "sf_grade", grd),
             field("كلمة سر مؤقتة (اختياري)", "sf_pass", pass),
             [h("label", { text: "اشتراك في كورسات (اختياري)" })], checks, [msg, h("button", { type: "submit", class: "ac_btn b_dark", text: "إنشاء الحساب" })]));
         form.addEventListener("submit", async function (ev) {
@@ -296,6 +323,9 @@
             if (!name.value.trim() || !email.value.trim()) { msg.textContent = "اكتب اسم الطالب وإيميله."; return; }
             var data = { name: name.value.trim(), email: email.value.trim(), courseIds: Array.prototype.map.call(form.querySelectorAll('input[type=checkbox]:checked'), function (c) { return c.value; }) };
             if (pass.value) data.password = pass.value;
+            if (stg.value) data.stage = stg.value;
+            if (grd.value) data.grade = Number(grd.value);
+            if (!!stg.value !== !!grd.value) { msg.textContent = "اختار المرحلة والصف مع بعض، أو سيبهم الاتنين فاضيين."; return; }
             try {
                 var d = await E.call("POST", "/api/teacher/students", data);
                 E.toast("اتعمل حساب " + d.student.name);
