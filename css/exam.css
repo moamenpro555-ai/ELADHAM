@@ -1,0 +1,499 @@
+/* =====================================================
+   exam.css  -  صفحة الامتحان التفاعلي
+   لازم يتحمّل بعد plat.css و media (1).css
+   (الكلاسات كلها بتبدأ بـ qz عشان متتلخبطش مع كلاسات الموقع)
+   ===================================================== */
+
+:root{
+    --ok: #2f7d4f;
+    --ok-bg: #e7f4ec;
+    --bad: #b3372f;
+    --bad-bg: #fbeceb;
+    --skip: #a8741a;
+    --skip-bg: #fbf1dc;
+}
+
+.qz_wrap{
+    width: min(900px, 100%);
+    margin: 0 auto;
+    padding: clamp(18px, 4vw, 36px) 16px 40px;
+    flex: 1;
+}
+
+/* ---------- رأس الامتحان ---------- */
+.qz_head{
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(7, 37, 29, 0.06);
+}
+.qz_title{
+    color: var(--text);
+    font-size: clamp(22px, 3.4vw, 30px);
+    font-weight: 800;
+}
+.qz_sub{
+    color: var(--muted);
+    margin-top: 4px;
+}
+.qz_meta{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 14px;
+}
+.qz_chip{
+    background: var(--beige);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ---------- الأجزاء والأسئلة ---------- */
+.qz_part{
+    margin-top: 28px;
+}
+.qz_part_t{
+    color: var(--text);
+    font-size: clamp(18px, 2.6vw, 22px);
+    font-weight: 800;
+    margin-bottom: 14px;
+}
+.qz_part_t::before{
+    content: '\F27F';
+    font-family: 'bootstrap-icons';
+    color: var(--gold-light);
+    margin-inline-end: 8px;
+}
+.qz_list{
+    display: grid;
+    gap: 16px;
+}
+.qz_card{
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 18px 18px;
+    box-shadow: 0 4px 12px rgba(7, 37, 29, 0.06);
+    transition: border-color 0.3s, background 0.3s;
+    min-width: 0;
+    /* لما الصفحة تنزل لسؤال، ما يتغطاش بالنافبار فوق ولا بشريط التسليم تحت */
+    scroll-margin: 90px 0 120px;
+}
+.qz_q{
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+    color: var(--text);
+    font-size: clamp(18px, 2.4vw, 21px);
+    font-weight: 700;
+    line-height: 1.7;
+    margin-bottom: 12px;
+}
+.qz_no{
+    flex: 0 0 auto;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--dark);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+    margin-top: 2px;
+}
+.qz_opts{
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.qz_opt{
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    background: var(--beige);
+    color: var(--text);
+    font-size: clamp(17px, 2.2vw, 20px);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    min-width: 0;
+}
+.qz_opt:hover{
+    background: #fff;
+    border-color: var(--gold-light);
+}
+.qz_opt input{
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.qz_opt:has(input:focus-visible){
+    outline: 2px solid var(--gold-light);
+    outline-offset: 3px;
+}
+.qz_let{
+    flex: 0 0 auto;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 800;
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.qz_txt{
+    overflow-wrap: anywhere;
+}
+/* الاختيار الحالي (قبل التسليم) */
+.qz_opt:has(input:checked){
+    background: var(--dark);
+    border-color: var(--dark);
+    color: #fff;
+}
+.qz_opt:has(input:checked) .qz_let{
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+}
+
+/* ---------- بعد التصحيح ---------- */
+.qz_done .qz_opt{
+    cursor: default;
+}
+.qz_done .qz_opt:hover{
+    background: var(--beige);
+    border-color: var(--line);
+}
+.qz_done .qz_opt.is_right{
+    background: var(--ok-bg);
+    border-color: var(--ok);
+    color: var(--ok);
+}
+.qz_done .qz_opt.is_right .qz_let{
+    background: var(--ok);
+    border-color: var(--ok);
+    color: #fff;
+}
+.qz_done .qz_opt.is_wrong{
+    background: var(--bad-bg);
+    border-color: var(--bad);
+    color: var(--bad);
+}
+.qz_done .qz_opt.is_wrong .qz_let{
+    background: var(--bad);
+    border-color: var(--bad);
+    color: #fff;
+}
+.qz_card.is_c_right{ border-color: var(--ok); }
+.qz_card.is_c_wrong{ border-color: var(--bad); }
+.qz_card.is_c_skip{ border-color: var(--skip); }
+.qz_tag{
+    display: inline-block;
+    margin-top: 12px;
+    padding: 3px 12px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 700;
+}
+.qz_tag.t_right{ background: var(--ok-bg); color: var(--ok); }
+.qz_tag.t_wrong{ background: var(--bad-bg); color: var(--bad); }
+.qz_tag.t_skip{ background: var(--skip-bg); color: var(--skip); }
+.qz_why{
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 16px;
+    line-height: 1.8;
+}
+.qz_why b{
+    color: var(--text);
+}
+
+/* ---------- شريط التسليم (ثابت تحت) ---------- */
+.qz_bar{
+    position: sticky;
+    bottom: 0;
+    z-index: 50;
+    margin-top: 28px;
+    background: var(--dark);
+    color: #fff;
+    border-radius: 16px;
+    padding: 12px 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px 18px;
+    box-shadow: 0 -4px 18px rgba(7, 37, 29, 0.25);
+}
+.qz_prog{
+    flex: 1 1 200px;
+    min-width: 0;
+}
+.qz_prog_t{
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.qz_track{
+    height: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 999px;
+    overflow: hidden;
+}
+.qz_fill{
+    height: 100%;
+    width: 0;
+    background: var(--gold-light);
+    border-radius: 999px;
+    transition: width 0.3s;
+}
+.qz_btn{
+    padding: 10px 26px;
+    background: var(--gold);
+    color: #fff;
+    border: 2px solid var(--gold);
+    border-radius: 12px;
+    font-size: 17px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: background 0.3s, border-color 0.3s;
+}
+.qz_btn:hover{
+    background: var(--gold-light);
+    border-color: var(--gold-light);
+}
+.qz_btn.b_dark{
+    background: var(--dark);
+    border-color: var(--dark);
+}
+.qz_btn.b_dark:hover{
+    background: var(--gold);
+    border-color: var(--gold);
+}
+.qz_btn.b_line{
+    background: transparent;
+    color: var(--text);
+    border-color: var(--line);
+}
+.qz_btn.b_line:hover{
+    background: #fff;
+    border-color: var(--gold-light);
+}
+.qz_bar .qz_btn.b_line{
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+}
+.qz_bar .qz_btn.b_line:hover{
+    background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- النتيجة ---------- */
+.qz_res{
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 24px 22px;
+    margin-bottom: 24px;
+    text-align: center;
+    box-shadow: 0 8px 22px rgba(7, 37, 29, 0.1);
+}
+.qz_circle{
+    --pct: 0;
+    --col: var(--gold);
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: conic-gradient(var(--col) calc(var(--pct) * 1%), var(--line) 0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.qz_circle_in{
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+}
+.qz_score{
+    font-size: 34px;
+    font-weight: 800;
+    line-height: 1.1;
+}
+.qz_pct{
+    font-size: 15px;
+    color: var(--muted);
+    font-weight: 700;
+}
+.qz_msg{
+    color: var(--text);
+    font-size: clamp(18px, 2.6vw, 22px);
+    font-weight: 800;
+}
+.qz_stats{
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-top: 18px;
+}
+.qz_stat{
+    border-radius: 14px;
+    padding: 12px 8px;
+    font-weight: 700;
+}
+.qz_stat b{
+    display: block;
+    font-size: 28px;
+    line-height: 1.2;
+}
+.qz_stat.s_right{ background: var(--ok-bg); color: var(--ok); }
+.qz_stat.s_wrong{ background: var(--bad-bg); color: var(--bad); }
+.qz_stat.s_skip{ background: var(--skip-bg); color: var(--skip); }
+
+.qz_wr{
+    margin-top: 22px;
+    text-align: start;
+}
+.qz_wr_t{
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 800;
+    margin-bottom: 10px;
+}
+.qz_wr_list{
+    display: grid;
+    gap: 12px;
+    list-style: none;
+}
+.qz_wr_item{
+    border: 2px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    background: var(--beige);
+}
+.qz_wr_q{
+    color: var(--text);
+    font-weight: 800;
+    font-size: 18px;
+    line-height: 1.7;
+}
+.qz_wr_a{
+    margin-top: 6px;
+    font-size: 17px;
+    font-weight: 700;
+}
+.qz_wr_a .a_bad{ color: var(--bad); }
+.qz_wr_a .a_ok{ color: var(--ok); }
+.qz_wr_go{
+    margin-top: 8px;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.qz_perfect{
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 14px;
+    background: var(--ok-bg);
+    color: var(--ok);
+    font-weight: 800;
+    font-size: 18px;
+}
+.qz_acts{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+/* ---------- رسالة التأكيد ---------- */
+.qz_dlg{
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 22px;
+    width: min(420px, calc(100% - 32px));
+    background: var(--beige);
+    color: var(--text);
+    margin: auto;
+}
+.qz_dlg::backdrop{
+    background: rgba(7, 37, 29, 0.55);
+}
+.qz_dlg p{
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.8;
+}
+.qz_dlg .qz_acts{
+    margin-top: 16px;
+}
+
+/* ---------- امتحان مش متاح ---------- */
+.qz_na{
+    text-align: center;
+    background: #fff;
+    border: 2px solid var(--line);
+    border-radius: 18px;
+    padding: 36px 20px;
+}
+.qz_na p{
+    color: var(--text);
+    font-size: 22px;
+    font-weight: 800;
+}
+.qz_na small{
+    display: block;
+    color: var(--muted);
+    margin: 6px 0 18px;
+    font-size: 16px;
+}
+
+/* ---------- الموبايل ---------- */
+@media (max-width: 576px){
+    .qz_opts{
+        grid-template-columns: 1fr;
+    }
+    .qz_head{
+        padding: 16px;
+    }
+    .qz_card{
+        padding: 14px;
+    }
+    .qz_bar{
+        border-radius: 14px;
+        padding: 10px 12px;
+    }
+    .qz_btn{
+        flex: 1 1 100%;
+    }
+    .qz_stat b{
+        font-size: 24px;
+    }
+}
