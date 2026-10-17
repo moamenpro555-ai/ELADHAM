@@ -577,3 +577,8 @@ aside{
         scroll-behavior: auto !important;
     }
 }
+
+/* أيقونة رابط "حسابي" */
+#link4::before{
+    content: '\F4DA';
+}
