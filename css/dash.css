@@ -103,6 +103,18 @@
 .ac_lesson.is_on{ border-color: var(--gold); background: #fff; }
 .ac_lesson .ic{ width: 22px; text-align: center; color: var(--muted); }
 .ac_lesson.is_done .ic{ color: var(--ok); }
+.ac_embed{ width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 12px; background: #000; display: block; }
+.ac_vp_wrap{ background: #000; border-radius: 12px; overflow: hidden; }
+.ac_vp_screen{ position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+.ac_vp_screen iframe, .ac_vp_mount{ position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.ac_vp_shield{ position: absolute; inset: 0; z-index: 2; cursor: pointer; background: transparent; }
+.ac_vp_mark{ position: absolute; z-index: 3; pointer-events: none; color: rgba(255,255,255,.38); font-size: 13px; text-shadow: 0 0 3px rgba(0,0,0,.7); direction: ltr; white-space: nowrap; user-select: none; transition: top 1s, left 1s; }
+.ac_vp_bar{ display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #14201b; flex-wrap: wrap; }
+.ac_vp_seek{ flex: 1 1 140px; min-width: 100px; }
+.ac_vp_time{ color: #fff; font-size: 13px; direction: ltr; min-width: 78px; text-align: center; }
+.ac_vp_bar select{ border-radius: 8px; padding: 4px; font-family: inherit; }
+.ac_vp_wrap:fullscreen{ display: flex; flex-direction: column; justify-content: center; }
+.ac_vp_wrap:fullscreen .ac_vp_screen{ aspect-ratio: auto; flex: 1; }
 .ac_player video{ width: 100%; border-radius: 12px; background: #000; max-height: 70vh; }
 .ac_empty{ color: var(--muted); text-align: center; padding: 22px 8px; }
 
@@ -188,3 +200,5 @@
     border: 2px solid var(--line); border-radius: 8px; padding: 4px 6px; background: var(--beige); color: var(--text);
     font-family: inherit; font-size: 14px;
 }
+.ac_vp_bar .b_line{ color: #fff; border-color: rgba(255,255,255,.35); background: transparent; }
+.ac_vp_bar .b_dark{ background: var(--gold); color: #14201b; }

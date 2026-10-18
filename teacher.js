@@ -182,7 +182,7 @@
             [h("h3", { class: "ac_h2", id: "lf_h", text: "إضافة درس", style: "margin-top:16px" })],
             field("عنوان الدرس", "lf_title", title), field("وصف (اختياري)", "lf_desc", desc),
             field("النوع", "lf_kind", kind), field("طريقة رابط الفيديو", "lf_prov", prov),
-            field("رابط الفيديو / الامتحان", "lf_ref", ref), field("المدة بالدقايق (اختياري)", "lf_mins", mins),
+            field("رابط الفيديو / الامتحان (يوتيوب أو جوجل درايف أو رابط mp4 مباشر)", "lf_ref", ref), field("المدة بالدقايق (اختياري)", "lf_mins", mins),
             [h("label", { class: "ac_check" }, [pub, "منشور"]), msg, h("div", { class: "ac_row" }, [submit, cancel])]));
         function reset() { editing = null; form.reset(); pub.checked = true; submit.textContent = "إضافة الدرس"; cancel.classList.add("ac_hidden"); document.getElementById("lf_h").textContent = "إضافة درس"; msg.textContent = ""; }
         function fill(l) {
