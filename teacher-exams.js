@@ -15,9 +15,18 @@
     // ================= قايمة الامتحانات =================
     async function examsView() {
         E.clear(body());
-        await run(async function () { exams = (await E.call("GET", "/api/teacher/exams")).exams; });
+        var failed = "";
+        try { exams = (await E.call("GET", "/api/teacher/exams")).exams; }
+        catch (e) { failed = (e && e.message ? e.message : "حصل خطأ") + (e && e.status ? " (" + e.status + ")" : ""); exams = []; }
         var box = h("div", { id: "ex_box" });
         body().appendChild(box);
+        if (failed) {
+            box.appendChild(h("div", { class: "ac_card" }, [
+                h("p", { class: "ac_msg", role: "alert", text: "ما قدرتش أجيب قايمة الامتحانات: " + failed }),
+                h("button", { type: "button", class: "ac_btn b_dark", text: "حاول تاني", onclick: function () { examsView(); } })
+            ]));
+            return;
+        }
         listView(box);
     }
 
@@ -134,7 +143,11 @@
             try {
                 if (ex) { await E.call("PATCH", "/api/teacher/exams/" + ex.id, data); E.toast("اتحفظ الامتحان"); await editor(box, ex.id); }
                 else { var r = await E.call("POST", "/api/teacher/exams", data); E.toast("اتحفظ الامتحان. ارفع الورقة دلوقتي."); await editor(box, r.exam.id); }
-            } catch (e) { msg.textContent = e.message || "حصل خطأ"; }
+            } catch (e) {
+                msg.textContent = "ما اتحفظش الامتحان: " + (e && e.message ? e.message : "حصل خطأ") + (e && e.status ? " (" + e.status + ")" : "");
+                E.toast(msg.textContent, "bad");
+                msg.scrollIntoView({ block: "center" });
+            }
         });
 
         E.clear(box);
