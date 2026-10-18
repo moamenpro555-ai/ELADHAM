@@ -1,0 +1,73 @@
+/* polish.css - تحسينات شكل وحركة لكل الصفحات. بيتحمّل آخر ملف CSS. مفيهوش JS ولا بيغيّر أي وظيفة */
+@property --pct{syntax:'<number>';inherits:true;initial-value:0}
+:root{--ease:cubic-bezier(.2,.8,.2,1)}
+/* ---------- عام ---------- */
+.ac_h1,.ac_h2,.qz_title,.qz_part_t,.text_1,.text_9,.qz_msg,.foot_2{font-family:'Reem Kufi','Cairo',serif}
+main,.parent,.ac_wrap,.qz_wrap{animation:pl_in .5s var(--ease) both}
+@keyframes pl_in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+nav{background:var(--dark);isolation:isolate}
+.img_adh{mix-blend-mode:lighten}
+.link{position:relative}
+.link::after{content:'';position:absolute;inset:auto 4px 2px 4px;height:2px;background:var(--gold-light);transform:scaleX(0);transition:transform .3s var(--ease)}
+.link:hover::after,.link[aria-current="page"]::after{transform:scaleX(1)}
+.foot{border-top:3px solid var(--gold)}
+/* ---------- صفحات المستويات ---------- */
+.child10{transition:background .3s,color .3s,border-color .3s,transform .25s var(--ease),box-shadow .3s}
+.child10:hover{transform:translateX(-4px)}
+.child10[aria-pressed="true"]{box-shadow:0 6px 16px rgba(7,37,29,.3)}
+.child11{transition:background .3s,color .3s,border-color .3s,transform .25s var(--ease)}
+.child11:hover{transform:translateX(-3px)}
+[class^="part"] > div{animation:pl_card .45s var(--ease) both}
+[class^="part"] > div:nth-child(2){animation-delay:.05s}[class^="part"] > div:nth-child(3){animation-delay:.1s}
+[class^="part"] > div:nth-child(4){animation-delay:.15s}[class^="part"] > div:nth-child(n+5){animation-delay:.2s}
+@keyframes pl_card{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+.level1 > div:not([class^="part"]),.level2 > div:not([class^="part"]),.level3 > div:not([class^="part"]),[class^="part"] > div{border-top:3px solid transparent}
+[class^="part"] > div:hover{border-top-color:var(--gold)}
+.exam1,.exam2,.exam3{transition:transform .4s var(--ease)}
+[class^="part"] > div:hover .exam1,[class^="part"] > div:hover .exam2,[class^="part"] > div:hover .exam3{transform:scale(1.04)}
+[class^="part"] > div:has(.exam1,.exam2,.exam3){overflow:hidden}
+.send1,.send2,.send3{transition:background .3s,border-color .3s,transform .2s}
+.send1:active,.send2:active,.send3:active{transform:scale(.96)}
+/* ---------- الامتحان التفاعلي ---------- */
+.qz_head{border-top:4px solid var(--gold)}
+.qz_opt:has(input:checked){animation:pl_pop .28s var(--ease);box-shadow:0 6px 14px rgba(7,37,29,.25)}
+@keyframes pl_pop{50%{transform:scale(1.03)}}
+.qz_card:focus-within{border-color:var(--gold-light)}
+.qz_fill{background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.qz_btn:active{transform:scale(.96)}
+.qz_circle{transition:--pct 1.2s var(--ease)}
+.qz_res{animation:pl_pop2 .6s var(--ease) both}
+@keyframes pl_pop2{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+.qz_done .qz_card.is_c_right{box-shadow:0 4px 14px rgba(47,125,79,.2)}
+.qz_done .qz_card.is_c_wrong{box-shadow:0 4px 14px rgba(179,55,47,.2)}
+.qz_stat{animation:pl_card .5s var(--ease) both}.qz_stat:nth-child(2){animation-delay:.1s}.qz_stat:nth-child(3){animation-delay:.2s}
+/* ---------- الحساب ---------- */
+.ac_card{position:relative;overflow:hidden}
+.ac_narrow .ac_card::before{content:'';position:absolute;inset:0 0 auto 0;height:4px;background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.ac_btn:active{transform:scale(.97)}
+.ac_form input,.ac_form select,.ac_form textarea,.ac_in{transition:border-color .25s,box-shadow .25s,background .25s}
+.ac_form input:focus,.ac_form select:focus,.ac_form textarea:focus,.ac_in:focus{background:#fff;box-shadow:0 0 0 4px rgba(197,162,93,.25)}
+.ac_course{border-top:4px solid var(--gold-light)}
+.ac_course.is_locked{border-top-color:var(--line)}
+.ac_bar > span{transition:width .8s var(--ease)}
+.ac_lesson{transition:border-color .25s,background .25s,transform .25s var(--ease)}
+.ac_lesson:hover{transform:translateX(-3px);border-color:var(--gold-light)}
+.ac_tab{transition:background .25s,color .25s,border-color .25s,transform .2s}
+.ac_tab:hover{transform:translateY(-1px)}
+.ac_toast{animation:pl_toast .35s var(--ease) both}
+@keyframes pl_toast{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.ac_dlg[open]{animation:pl_pop2 .3s var(--ease)}
+.ac_table tbody tr{transition:background .2s}
+.ac_table tbody tr:hover{background:var(--beige)}
+@media (prefers-reduced-motion:reduce){
+ *,*::before,*::after{animation:none!important;transition:none!important}
+}
+
+/* ---------- لوجو الأدهم نص متحرك (بدل الصورة) ---------- */
+.logo{display:flex;align-items:center}
+.brand{display:inline-flex;flex-direction:column;align-items:flex-start;gap:3px;line-height:1;padding-inline-start:clamp(14px,3vw,36px);cursor:default;animation:pl_brand .8s var(--ease) both}
+.brand_n{font-family:'Reem Kufi','Cairo',serif;font-weight:700;font-size:clamp(28px,3.2vw,36px);line-height:1.1;color:var(--gold-light);background:linear-gradient(100deg,var(--gold) 35%,#f6e2a8 50%,var(--gold) 65%) 150% 0/250% 100% no-repeat;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:pl_gleam 5s 1s ease-in-out infinite}
+.brand_s{font-size:11px;font-weight:600;color:#cfd8d4;letter-spacing:.3px}
+@keyframes pl_gleam{0%{background-position:150% 0}60%,100%{background-position:-50% 0}}
+@keyframes pl_brand{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:none}}
+@media (max-width:576px){.logo{justify-content:center;width:100%}.brand{align-items:center;padding-inline-start:0}}
