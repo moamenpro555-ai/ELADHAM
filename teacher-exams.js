@@ -78,6 +78,7 @@
         var grade = ui.placeGrade("ex_grade", ex ? ex.grade : 1);
         var kind = h("select", { id: "ex_kind" }, [option("session", "امتحان حصة", ex && ex.kind === "session"), option("month", "امتحان شهر", !ex || ex.kind === "month")]);
         var month = h("select", { id: "ex_month" }, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function (m) { return option(m, E.MONTHS[m], ex && ex.month ? ex.month === m : m === 10); }));
+        var sno = h("input", { id: "ex_sno", type: "number", min: "1", max: "30", value: String(ex && ex.sessionNo ? ex.sessionNo : 1) });
         var qn = h("input", { id: "ex_qn", type: "number", min: "1", max: "100", value: String(ex ? ex.questionCount : 10) });
         var cc = h("select", { id: "ex_cc" }, [2, 3, 4, 5].map(function (n) { return option(n, E.num(n) + " اختيارات (" + E.LETTERS.slice(0, n).join(" ") + ")", (ex ? ex.choicesCount : 4) === n); }));
         var att = h("input", { id: "ex_att", type: "number", min: "0", max: "50", value: String(ex ? ex.maxAttempts : 1) });
@@ -86,7 +87,7 @@
         var msg = h("p", { class: "ac_msg", role: "alert" });
         var keyBox = h("div", { class: "ac_key", id: "ex_key" });
 
-        function syncMonth() { month.disabled = kind.value !== "month"; }
+        function syncMonth() { month.disabled = kind.value !== "month"; sno.disabled = kind.value !== "session"; }
         kind.addEventListener("change", syncMonth); syncMonth();
 
         function buildKey() {
@@ -114,7 +115,7 @@
         var form = h("form", { class: "ac_form", novalidate: true }, [].concat(
             field("اسم الامتحان", "ex_title", title), field("وصف أو تعليمات (اختياري)", "ex_desc", desc),
             field("المرحلة", "ex_stage", stage), field("الصف", "ex_grade", grade),
-            field("النوع", "ex_kind", kind), field("الشهر (لامتحان الشهر)", "ex_month", month),
+            field("النوع", "ex_kind", kind), field("الشهر (لامتحان الشهر)", "ex_month", month), field("رقم الحصة (لامتحان الحصة: 1 = الأولى، 2 = التانية ...)", "ex_sno", sno),
             field("عدد الأسئلة", "ex_qn", qn), field("عدد الاختيارات لكل سؤال", "ex_cc", cc),
             field("عدد المحاولات المسموحة (0 = بلا حد)", "ex_att", att),
             [h("label", { class: "ac_check" }, [showAns, "اظهر الإجابات الصحيحة للطالب بعد التسليم"]),
@@ -140,6 +141,10 @@
                 isPublished: pub.checked, answerKey: keyVals.slice(0, n)
             };
             if (kind.value === "month") data.month = Number(month.value);
+            if (kind.value === "session") {
+                data.sessionNo = Number(sno.value);
+                if (!Number.isInteger(data.sessionNo) || data.sessionNo < 1 || data.sessionNo > 30) { msg.textContent = "رقم الحصة من 1 لـ 30."; return; }
+            }
             try {
                 if (ex) { await E.call("PATCH", "/api/teacher/exams/" + ex.id, data); E.toast("اتحفظ الامتحان"); await editor(box, ex.id); }
                 else { var r = await E.call("POST", "/api/teacher/exams", data); E.toast("اتحفظ الامتحان. ارفع الورقة دلوقتي."); await editor(box, r.exam.id); }

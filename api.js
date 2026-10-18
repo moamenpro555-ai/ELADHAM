@@ -56,7 +56,7 @@
     function num(n) { return Number(n).toLocaleString("ar-EG"); }
     function courseLabel(c) { return (STAGES[c.stage] || c.stage) + " - الصف " + (GRADES[c.grade] || c.grade); }
     function placeLabel(stage, grade) { return stage && grade ? courseLabel({ stage: stage, grade: grade }) : "غير محدد"; }
-    function examWhen(e) { return e.kind === "month" ? "امتحان شهر " + (MONTHS[e.month] || "") : "امتحان حصة"; }
+    function examWhen(e) { return e.kind === "month" ? "امتحان شهر " + (MONTHS[e.month] || "") : "امتحان حصة" + (e.sessionNo ? " رقم " + Number(e.sessionNo).toLocaleString("ar-EG") : ""); }
 
     // رفع ملف خام (صورة / PDF). السيرفر بيتعرّف على نوعه من محتواه مش من اسمه.
     async function upload(method, path, file) {

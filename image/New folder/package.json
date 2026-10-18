@@ -1,0 +1,17 @@
+{
+  "name": "eladham-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ELADHAM educational platform API (Node.js + PostgreSQL, zero external dependencies)",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "migrate": "node scripts/migrate.js",
+    "create-teacher": "node scripts/create-teacher.js",
+    "test": "node --test --test-concurrency=1 tests/*.test.js"
+  }
+}
