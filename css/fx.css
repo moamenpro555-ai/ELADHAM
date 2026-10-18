@@ -1,0 +1,114 @@
+/* ====== لمسات الحركة والشكل — fx.css ======
+   كل الحركات خفيفة وبتتوقف تلقائيًا لو الجهاز مفعّل "تقليل الحركة". */
+
+/* ظهور الصفحة بنعومة */
+@keyframes fx_page{ from{ opacity: 0; } to{ opacity: 1; } }
+body{ animation: fx_page .5s ease-out both; }
+
+/* شريط تقدّم التمرير فوق الصفحة */
+.fx_progress{
+    position: fixed; top: 0; right: 0; height: 3px; width: 0;
+    background: linear-gradient(270deg, var(--gold), var(--gold-light), #e8d3a1);
+    z-index: 9999; pointer-events: none; transition: width .1s linear;
+}
+
+/* ظهور العناصر تدريجيًا وقت التمرير (JS بيضيف الكلاسات وبيشيلها بعد ما تخلص) */
+.fx_pre{ opacity: 0; transform: translateY(26px) scale(.98); }
+.fx_pre.fx_in{
+    opacity: 1; transform: none;
+    transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1);
+    transition-delay: var(--fx-d, 0ms);
+}
+
+/* النافبار: ظل خفيف لما الصفحة تنزل + خط ذهبي تحت اللينكات */
+nav{ transition: box-shadow .3s ease; }
+nav.fx_stuck{ box-shadow: 0 6px 22px rgba(7,37,29,.28); }
+.link{ transition: color .25s ease, transform .25s ease; }
+.link:hover{ transform: translateY(-2px); }
+
+/* اللوجو يطفو بهدوء */
+@keyframes fx_float{ 0%,100%{ transform: translateY(0); } 50%{ transform: translateY(-4px); } }
+.img_adh{ animation: fx_float 4.5s ease-in-out infinite; }
+
+/* الصورة الرئيسية: زووم هادي عند الدخول */
+@keyframes fx_hero{ from{ transform: scale(1.06); opacity: .6; } to{ transform: scale(1); opacity: 1; } }
+.img_wel{ animation: fx_hero 1.1s cubic-bezier(.2,.8,.2,1) both; }
+
+/* عناوين الأقسام: لمعة ذهبية بتعدّي */
+@keyframes fx_shine{ to{ background-position: -200% center; } }
+.text_1{
+    background: linear-gradient(100deg, var(--gold) 30%, #e8d3a1 50%, var(--gold) 70%);
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent; color: transparent;
+    animation: fx_shine 5s linear infinite;
+}
+
+/* كروت المراحل والكورسات والامتحانات: رفعة + ظل + حد ذهبي عند المرور */
+.phase > div, .ac_card, .ac_course, .ac_lesson, [class^="level"] > div{
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, border-color .3s ease, background-color .3s ease;
+}
+.phase > div:hover, a.ac_course:hover, button.ac_course:hover{
+    transform: translateY(-6px);
+    box-shadow: 0 16px 34px rgba(7,37,29,.16);
+    border-color: var(--gold-light);
+}
+[class^="level"] > div:hover{ transform: translateY(-5px); box-shadow: 0 14px 30px rgba(7,37,29,.15); }
+.ac_lesson:not(.is_locked):hover{ transform: translateX(-4px); border-color: var(--gold-light); }
+
+/* الصور داخل الكروت: زووم بسيط */
+[class^="level"] img[class^="exam"], .ac_cardimg, .ac_cover{ transition: transform .5s ease; }
+[class^="level"] > div:hover img[class^="exam"], .ac_course:hover .ac_cardimg, .ac_course:hover .ac_cover{ transform: scale(1.04); }
+[class^="level"] > div, .ac_course{ overflow: hidden; }
+
+/* الأزرار: رفعة + ضغطة + تأثير موجة */
+.ac_btn, .child10, .child11, .send3{
+    transition: transform .2s ease, box-shadow .2s ease, background-color .25s ease, color .25s ease, border-color .25s ease;
+    position: relative; overflow: hidden;
+}
+.ac_btn:not(:disabled):hover, .child11:hover, .child10:hover{ transform: translateY(-2px); box-shadow: 0 8px 18px rgba(7,37,29,.2); }
+.ac_btn:not(:disabled):active, .child11:active, .child10:active{ transform: translateY(0) scale(.97); box-shadow: none; }
+.fx_ripple{
+    position: absolute; border-radius: 50%; pointer-events: none;
+    background: rgba(255,255,255,.45); transform: scale(0);
+    animation: fx_rip .6s ease-out forwards;
+}
+@keyframes fx_rip{ to{ transform: scale(4); opacity: 0; } }
+
+/* التنقل بين التابات (كورسات/امتحانات…) */
+@keyframes fx_tab{ from{ opacity: 0; transform: translateY(14px); } to{ opacity: 1; transform: none; } }
+.fx_tab_in{ animation: fx_tab .45s cubic-bezier(.2,.8,.2,1) both; }
+
+/* الإشعارات تنزلق، ونتيجة الامتحان تطلع بـ "pop" */
+@keyframes fx_toast{ from{ opacity: 0; transform: translateY(-14px) scale(.96); } to{ opacity: 1; transform: none; } }
+.ac_toast{ animation: fx_toast .35s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes fx_pop{ 0%{ opacity: 0; transform: scale(.85); } 60%{ transform: scale(1.04); } 100%{ opacity: 1; transform: scale(1); } }
+.ac_result{ animation: fx_pop .5s ease-out both; }
+.ac_result.r_ok strong{ display: inline-block; animation: fx_pop .7s .15s ease-out both; }
+
+/* الدرس المقفول بيهتز لما تدوس عليه */
+@keyframes fx_shake{ 0%,100%{ transform: translateX(0); } 20%,60%{ transform: translateX(-6px); } 40%,80%{ transform: translateX(6px); } }
+.ac_lesson.fx_shake{ animation: fx_shake .4s ease; }
+.ac_lesson.is_locked .ic{ display: inline-block; }
+/* الدرس اللي لسه اتفتح يلمع لحظة */
+@keyframes fx_unlock{ 0%{ box-shadow: 0 0 0 0 rgba(178,131,59,.6); } 100%{ box-shadow: 0 0 0 14px rgba(178,131,59,0); } }
+.ac_lesson.fx_unlocked{ animation: fx_unlock 1s ease-out 2; }
+
+/* شريط التقدّم بيتملّي بنعومة */
+.ac_bar span{ transition: width .8s cubic-bezier(.2,.8,.2,1); }
+
+/* حقول الإدخال */
+input:not([type=radio]):not([type=checkbox]), select, textarea{ transition: border-color .2s ease, box-shadow .2s ease; }
+input:not([type=radio]):not([type=checkbox]):focus, select:focus, textarea:focus{
+    border-color: var(--gold) !important; box-shadow: 0 0 0 3px rgba(178,131,59,.22); outline: none;
+}
+
+/* خيارات الامتحان */
+.ac_qopt{ transition: background-color .2s ease, transform .2s ease; }
+.ac_qopt:hover{ transform: translateX(-3px); }
+
+/* احترام "تقليل الحركة" */
+@media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{ animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    .fx_pre{ opacity: 1 !important; transform: none !important; }
+}

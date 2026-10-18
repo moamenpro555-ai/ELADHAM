@@ -22,7 +22,7 @@
         if (p) p.textContent = ex.title;
         card.setAttribute("data-exam-id", String(ex.id));
         if (ex.hasCover) {
-            E.blobUrl("/api/exams/" + ex.id + "/cover").then(function (u) { img.src = u; }, function () {});
+            E.blobUrl("/api/exams/" + ex.id + "/cover").then(function (u) { img.src = u; img.classList.add("cvr"); }, function () {});
         }
     }
     function addCard(grid, kind, ex) {

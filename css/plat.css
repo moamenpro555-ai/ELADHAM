@@ -600,3 +600,9 @@ aside{
     color: var(--muted);
     padding: 24px 8px;
 }
+
+/* الصورة التعريفية للكورس/الامتحان تملأ مربعها كله (بتتقص من الأطراف لو نسبتها مختلفة) */
+img.cvr{
+    object-fit: cover;
+    background: var(--beige);
+}

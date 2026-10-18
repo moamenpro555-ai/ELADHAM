@@ -208,16 +208,67 @@
         var msg = h("p", { class: "ac_msg", role: "alert" });
         var submit = h("button", { type: "submit", class: "ac_btn b_dark", text: "إضافة الدرس" });
         var cancel = h("button", { type: "button", class: "ac_btn b_line ac_hidden", text: "إلغاء التعديل", onclick: function () { reset(); } });
+        // ---- امتحان قصير على الدرس (اختياري) ----
+        var quizQs = [];
+        var passIn = h("input", { id: "lf_pass", type: "number", min: "0", max: "100", value: "0" });
+        var quizBox = h("div", { class: "ac_quiz", id: "lf_quiz" });
+        function renderQuiz() {
+            E.clear(quizBox);
+            if (!quizQs.length) quizBox.appendChild(h("p", { class: "ac_sub", text: "مفيش امتحان على الدرس ده. لو ضفت أسئلة، الطالب لازم يمتحن عليه عشان يفتح الدرس اللي بعده." }));
+            quizQs.forEach(function (q, qi) {
+                var qt = h("textarea", { maxlength: "500", "aria-label": "نص السؤال " + (qi + 1), placeholder: "نص السؤال" }); qt.value = q.text;
+                qt.addEventListener("input", function () { q.text = qt.value; });
+                var rows = q.choices.map(function (c, ci) {
+                    var r = h("input", { type: "radio", name: "lq_a" + qi, "aria-label": "الإجابة الصح" });
+                    r.checked = q.answer === ci; r.addEventListener("change", function () { q.answer = ci; });
+                    var t = h("input", { type: "text", maxlength: "200", value: c, placeholder: "الاختيار " + E.LETTERS[ci], "aria-label": "اختيار " + E.LETTERS[ci] });
+                    t.addEventListener("input", function () { q.choices[ci] = t.value; });
+                    return h("div", { class: "ac_qrow" }, [r, t,
+                        q.choices.length > 2 ? h("button", { type: "button", class: "ac_btn b_line b_sm", text: "حذف", onclick: function () { q.choices.splice(ci, 1); if (q.answer === ci) q.answer = -1; else if (q.answer > ci) q.answer -= 1; renderQuiz(); } }) : null]);
+                });
+                quizBox.appendChild(h("div", { class: "ac_qcard" }, [
+                    h("div", { class: "ac_row" }, [h("strong", { text: "سؤال " + E.num(qi + 1) }),
+                        h("button", { type: "button", class: "ac_btn b_bad b_sm", text: "حذف السؤال", onclick: function () { quizQs.splice(qi, 1); renderQuiz(); } })]),
+                    qt, h("p", { class: "ac_sub", text: "علّم الدايرة جنب الإجابة الصح:" })].concat(rows, [
+                    q.choices.length < 5 ? h("button", { type: "button", class: "ac_btn b_line b_sm", text: "إضافة اختيار", onclick: function () { q.choices.push(""); renderQuiz(); } }) : null])));
+            });
+            if (quizQs.length < 20) quizBox.appendChild(h("button", { type: "button", class: "ac_btn b_gold b_sm", text: "إضافة سؤال", onclick: function () { quizQs.push({ text: "", choices: ["", "", "", ""], answer: -1 }); renderQuiz(); } }));
+        }
+        renderQuiz();
+        var pdfBox = h("div", { class: "ac_pdfbox", id: "lf_pdf" });
+        function renderPdf() {
+            E.clear(pdfBox);
+            if (!editing) { pdfBox.appendChild(h("p", { class: "ac_sub", text: "احفظ الدرس الأول، وبعدها تقدر ترفع ملف PDF اختياري (شرح مثلاً) من «تعديل الدرس»." })); return; }
+            if (editing.hasPdf) {
+                pdfBox.appendChild(h("p", { class: "ac_sub", text: "الملف الحالي: " + (editing.pdfName || "PDF") }));
+                pdfBox.appendChild(h("button", { type: "button", class: "ac_btn b_bad b_sm", text: "حذف الملف", onclick: function () {
+                    run(async function () { await E.call("DELETE", "/api/teacher/lessons/" + editing.id + "/pdf"); E.toast("اتحذف الملف"); await manageCourse(course.id); });
+                } }));
+            }
+            var pf = h("input", { type: "file", accept: "application/pdf,.pdf", id: "lf_pdf_file", "aria-label": "اختار ملف PDF" });
+            pdfBox.appendChild(pf);
+            pdfBox.appendChild(h("button", { type: "button", class: "ac_btn b_gold b_sm", text: "رفع الملف", onclick: function () {
+                var f = pf.files[0];
+                if (!f) { E.toast("اختار ملف PDF الأول", "bad"); return; }
+                if (f.size > 8 * 1048576) { E.toast("الملف أكبر من 8 ميجا", "bad"); return; }
+                run(async function () { await E.upload("PUT", "/api/teacher/lessons/" + editing.id + "/pdf?name=" + encodeURIComponent(f.name), f); E.toast("اترفع الملف"); await manageCourse(course.id); });
+            } }));
+        }
+        renderPdf();
         var form = h("form", { class: "ac_form", novalidate: true, id: "ac_lessonform" }, [].concat(
             [h("h3", { class: "ac_h2", id: "lf_h", text: "إضافة درس", style: "margin-top:16px" })],
             field("عنوان الدرس", "lf_title", title), field("وصف (اختياري)", "lf_desc", desc),
             field("النوع", "lf_kind", kind), field("طريقة رابط الفيديو", "lf_prov", prov),
             field("رابط الفيديو / الامتحان (يوتيوب أو جوجل درايف أو رابط mp4 مباشر)", "lf_ref", ref), field("المدة بالدقايق (اختياري)", "lf_mins", mins),
+            [h("h3", { class: "ac_h2", text: "امتحان على الدرس (اختياري، لحد 20 سؤال)", style: "margin-top:14px" }), quizBox],
+            field("نسبة النجاح المطلوبة لفتح الدرس اللي بعده (0 = يكفي إنه يمتحن)", "lf_pass", passIn),
+            [h("h3", { class: "ac_h2", text: "ملف PDF للدرس (اختياري)", style: "margin-top:14px" }), pdfBox],
             [h("label", { class: "ac_check" }, [pub, "منشور"]), msg, h("div", { class: "ac_row" }, [submit, cancel])]));
-        function reset() { editing = null; form.reset(); pub.checked = true; submit.textContent = "إضافة الدرس"; cancel.classList.add("ac_hidden"); document.getElementById("lf_h").textContent = "إضافة درس"; msg.textContent = ""; }
+        function reset() { editing = null; form.reset(); pub.checked = true; quizQs = []; passIn.value = "0"; renderQuiz(); renderPdf(); submit.textContent = "إضافة الدرس"; cancel.classList.add("ac_hidden"); document.getElementById("lf_h").textContent = "إضافة درس"; msg.textContent = ""; }
         function fill(l) {
             editing = l; title.value = l.title; desc.value = l.description || ""; kind.value = l.kind; prov.value = l.videoProvider;
             ref.value = l.videoRef || ""; mins.value = l.durationSeconds ? Math.round(l.durationSeconds / 60) : ""; pub.checked = l.isPublished;
+            quizQs = l.quiz ? JSON.parse(JSON.stringify(l.quiz)) : []; passIn.value = String(l.quizPassPercent || 0); renderQuiz(); renderPdf();
             submit.textContent = "حفظ الدرس"; cancel.classList.remove("ac_hidden"); document.getElementById("lf_h").textContent = "تعديل الدرس";
             form.scrollIntoView({ behavior: "smooth", block: "center" });
         }
@@ -229,6 +280,17 @@
             var data = { title: title.value.trim(), description: desc.value.trim(), kind: kind.value, videoProvider: prov.value,
                 videoRef: ref.value.trim(), isPublished: pub.checked };
             if (mins.value !== "") data.durationSeconds = Math.round(Number(mins.value) * 60);
+            for (var qi = 0; qi < quizQs.length; qi++) {
+                var q = quizQs[qi];
+                if (!q.text.trim()) { msg.textContent = "اكتب نص السؤال " + (qi + 1) + "."; return; }
+                if (q.choices.some(function (c) { return !c.trim(); })) { msg.textContent = "املأ كل اختيارات السؤال " + (qi + 1) + " أو احذف الفاضي."; return; }
+                if (!(q.answer >= 0 && q.answer < q.choices.length)) { msg.textContent = "علّم الإجابة الصح للسؤال " + (qi + 1) + "."; return; }
+            }
+            var pass = Number(passIn.value);
+            if (!Number.isInteger(pass) || pass < 0 || pass > 100) { msg.textContent = "نسبة النجاح من 0 لـ 100."; return; }
+            data.quizPassPercent = pass;
+            if (quizQs.length) data.quiz = quizQs.map(function (x) { return { text: x.text.trim(), choices: x.choices.map(function (c) { return c.trim(); }), answer: x.answer }; });
+            else if (editing) data.quiz = null;
             try {
                 if (editing) await E.call("PATCH", "/api/teacher/lessons/" + editing.id, data);
                 else await E.call("POST", "/api/teacher/courses/" + course.id + "/lessons", data);

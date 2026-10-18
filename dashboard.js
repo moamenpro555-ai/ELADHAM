@@ -43,7 +43,7 @@
     function clock(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + ("0" + (s % 60)).slice(-2); }
 
     // مشغّل يوتيوب بأزرارنا إحنا: من غير عنوان ولا روابط يوتيوب قابلة للضغط، وعليه اسم الطالب كعلامة مائية
-    async function openYouTube(l, id, holder) {
+    async function openYouTube(l, id, holder, onEnded) {
         await loadYT();
         var mount = h("div", { class: "ac_vp_mount" });
         var shield = h("div", { class: "ac_vp_shield", title: "تشغيل / إيقاف" });
@@ -89,7 +89,7 @@
                 onStateChange: function (e) {
                     play.textContent = e.data === 1 ? "إيقاف" : "تشغيل";
                     if (e.data === 2) save(l, { positionSeconds: Math.floor(player.getCurrentTime()) });
-                    if (e.data === 0) { play.textContent = "تشغيل"; markDone(l, true); }
+                    if (e.data === 0) { play.textContent = "تشغيل"; if (onEnded) onEnded(); }
                 }
             }
         });
@@ -187,6 +187,7 @@
 
     function courseCard(c) {
         var inner = [
+            c.hasCover ? h("img", { class: "ac_cardimg", alt: "", loading: "lazy", src: String(window.ELADHAM_API || "").replace(/\/$/, "") + "/api/public/courses/" + encodeURIComponent(c.id) + "/cover" }) : null,
             h("span", { class: "ac_course_t", text: c.title }),
             h("span", { class: "ac_course_m", text: E.courseLabel(c) }),
             c.description ? h("span", { class: "ac_course_m", text: c.description }) : null
@@ -226,16 +227,123 @@
     }
 
     function lessonBtn(l) {
-        var b = h("button", { type: "button", class: "ac_lesson" + (l.completed ? " is_done" : ""), "data-id": l.id, onclick: function () { openLesson(l); } }, [
-            h("span", { class: "ic", text: l.completed ? "✓" : (l.kind === "exam" ? "؟" : "▶") }),
-            h("span", { text: l.title })
+        var b = h("button", { type: "button", class: "ac_lesson" + (l.completed ? " is_done" : "") + (l.locked ? " is_locked" : ""), "data-id": l.id,
+            "aria-disabled": l.locked ? "true" : null,
+            onclick: function () {
+                if (l.locked) { E.toast("الدرس ده مقفول. خلّص الدرس اللي قبله وامتحن عليه الأول.", "bad"); return; }
+                openLesson(l);
+            } }, [
+            h("span", { class: "ic", text: l.locked ? "🔒" : (l.completed ? "✓" : (l.kind === "exam" ? "؟" : "▶")) }),
+            h("span", { text: l.title }),
+            l.hasQuiz ? h("span", { class: "ac_pill", text: "امتحان" }) : null
         ]);
         return b;
     }
 
+    // بعد ما الطالب ينجح أو يكمّل درس: نجيب حالة الدروس من السيرفر عشان اللي بعده يتفتح
+    async function refreshLessons() {
+        if (!current) return;
+        try {
+            var d = await E.call("GET", "/api/courses/" + encodeURIComponent(current.course.id));
+            current.lessons = d.lessons;
+            var ul = document.getElementById("ac_lessons");
+            if (!ul) return;
+            E.clear(ul);
+            d.lessons.forEach(function (x) {
+                var li = h("li", null, [lessonBtn(x)]);
+                ul.appendChild(li);
+                if (activeLesson && x.id === activeLesson.id) { li.firstChild.classList.add("is_on"); activeLesson = x; }
+            });
+        } catch (e) { /* القايمة هتتحدّث في المرة الجاية */ }
+    }
+
+    // ---------- الامتحان القصير تحت الفيديو ----------
+    function quizCard(l, gate) {
+        var card = h("div", { class: "ac_quizcard" });
+        var head = h("h3", { class: "ac_h2", text: "امتحان على الدرس (" + E.num(l.quizCount) + " " + (l.quizCount === 1 ? "سؤال" : "أسئلة") + ")" });
+        var note = h("p", { class: "ac_sub", text: l.passPercent > 0 ? "لازم تجيب " + E.num(l.passPercent) + "٪ على الأقل عشان يتفتح الدرس اللي بعده." : "امتحن على الدرس عشان يتفتح الدرس اللي بعده." });
+        var host = h("div");
+        card.appendChild(head); card.appendChild(note); card.appendChild(host);
+        var startBtn = h("button", { type: "button", class: "ac_btn b_dark", text: l.completed ? "إعادة الامتحان" : "ابدأ الامتحان" });
+        var lockMsg = h("p", { class: "ac_sub", text: "اتفرّج على الفيديو لحد آخره الأول، وبعدها الامتحان بيتفتح." });
+        function sync() {
+            var open = gate.done || l.completed;
+            startBtn.disabled = !open;
+            lockMsg.style.display = open ? "none" : "";
+        }
+        gate.onChange = sync;
+        host.appendChild(lockMsg); host.appendChild(startBtn); sync();
+        startBtn.addEventListener("click", async function () {
+            startBtn.disabled = true;
+            try {
+                var d = await E.call("GET", "/api/lessons/" + encodeURIComponent(l.id) + "/quiz");
+                renderQuestions(d.quiz);
+            } catch (e) { E.toast(e.message || "مقدرتش أفتح الامتحان", "bad"); startBtn.disabled = false; }
+        });
+        function renderQuestions(q) {
+            E.clear(host);
+            var picks = new Array(q.questions.length).fill(null);
+            var msg = h("p", { class: "ac_msg", role: "alert" });
+            q.questions.forEach(function (it, qi) {
+                var box = h("fieldset", { class: "ac_qa", id: "qa_" + qi }, [h("legend", { text: E.num(qi + 1) + ". " + it.text })]);
+                it.choices.forEach(function (c, ci) {
+                    var r = h("input", { type: "radio", name: "qa" + qi, value: String(ci) });
+                    r.addEventListener("change", function () { picks[qi] = ci; });
+                    box.appendChild(h("label", { class: "ac_qopt" }, [r, h("span", { text: c })]));
+                });
+                host.appendChild(box);
+            });
+            host.appendChild(msg);
+            var send = h("button", { type: "button", class: "ac_btn b_dark", text: "تسليم الإجابات" });
+            host.appendChild(send);
+            send.addEventListener("click", async function () {
+                var open = picks.map(function (p, i) { return p === null ? i + 1 : 0; }).filter(Boolean);
+                if (open.length && !(await E.confirmBox("لسه ما جاوبتش على الأسئلة: " + open.join("، ") + ". تسلّم كده؟", "سلّم"))) return;
+                send.disabled = true; msg.textContent = "";
+                try {
+                    var r = await E.call("POST", "/api/lessons/" + encodeURIComponent(l.id) + "/quiz/submit", { answers: picks });
+                    showResult(r);
+                } catch (e) { msg.textContent = e.message || "حصل خطأ"; send.disabled = false; }
+            });
+        }
+        function showResult(r) {
+            var a = r.attempt;
+            E.clear(host);
+            host.appendChild(h("div", { class: "ac_result " + (a.passed ? "r_ok" : "r_bad") }, [
+                h("strong", { text: E.num(a.score) + " / " + E.num(a.total) + " (" + E.num(a.percent) + "٪)" }),
+                h("p", { text: a.passed ? "برافو! نجحت." : "لسه ما وصلتش لنسبة النجاح (" + E.num(a.passPercent) + "٪)." }),
+                r.wrong.length ? h("p", { class: "ac_sub", text: "الأسئلة اللي محتاجة مراجعة: " + r.wrong.map(function (n) { return E.num(n); }).join("، ") }) : null
+            ]));
+            if (a.passed) {
+                l.completed = true;
+                E.toast("اتفتح الدرس اللي بعده");
+                refreshLessons();
+            }
+            host.appendChild(h("button", { type: "button", class: "ac_btn b_line", text: a.passed ? "إعادة الامتحان" : "جرّب تاني", onclick: function () { startBtn.disabled = false; E.clear(host); host.appendChild(startBtn); startBtn.click(); } }));
+        }
+        return card;
+    }
+
+    function pdfButton(l) {
+        var wrap = h("div", { class: "ac_pdfrow" });
+        var b = h("button", { type: "button", class: "ac_btn b_gold", text: "افتح ملف الشرح (PDF)", onclick: async function () {
+            b.disabled = true;
+            try {
+                var u = await E.blobUrl("/api/lessons/" + encodeURIComponent(l.id) + "/pdf");
+                window.open(u, "_blank", "noopener");
+            } catch (e) { E.toast(e.message || "مقدرتش أفتح الملف", "bad"); }
+            b.disabled = false;
+        } });
+        wrap.appendChild(b);
+        return wrap;
+    }
+
     async function openLesson(l) {
         window.clearInterval(saveTimer);
+        if (l.locked) { E.toast("الدرس ده مقفول. خلّص الدرس اللي قبله وامتحن عليه الأول.", "bad"); return; }
         activeLesson = l;
+        var gate = { done: false, onChange: null };
+        function videoEnded() { gate.done = true; if (gate.onChange) gate.onChange(); if (!l.hasQuiz) markDone(l, true); }
         Array.prototype.forEach.call(document.querySelectorAll(".ac_lesson"), function (b) { b.classList.toggle("is_on", b.getAttribute("data-id") === l.id); });
         var player = E.clear(document.getElementById("ac_player"));
         player.appendChild(h("h3", { class: "ac_h2", text: l.title }));
@@ -249,20 +357,24 @@
             if (l.kind === "exam") {
                 holder.replaceWith(h("a", { class: "ac_btn b_gold", href: url, target: "_blank", rel: "noopener", text: "ابدأ الامتحان" }));
             } else if (youtubeId(url)) {
-                await openYouTube(l, youtubeId(url), holder);
+                await openYouTube(l, youtubeId(url), holder, videoEnded);
             } else if (embedFor(url)) {
                 holder.replaceWith(h("iframe", { class: "ac_embed", src: embedFor(url), title: l.title, allowfullscreen: true,
                     allow: "fullscreen; encrypted-media; picture-in-picture", referrerpolicy: "strict-origin-when-cross-origin" }));
+                // جوجل درايف مش بيبلّغنا لما الفيديو يخلص، فبنوفر زرار يأكّد بيه الطالب
+                if (l.hasQuiz) player.appendChild(h("button", { type: "button", class: "ac_btn b_line", style: "margin-top:10px", text: "خلّصت الفيديو", onclick: videoEnded }));
             } else {
                 var v = h("video", { controls: true, controlsList: "nodownload", playsinline: true, preload: "metadata" });
                 v.src = url;
                 holder.replaceWith(v);
                 v.addEventListener("loadedmetadata", function () { if (l.positionSeconds > 5 && l.positionSeconds < v.duration - 5) v.currentTime = l.positionSeconds; });
                 v.addEventListener("pause", function () { if (!v.ended) save(l, { positionSeconds: Math.floor(v.currentTime) }); });
-                v.addEventListener("ended", function () { markDone(l, true); });
+                v.addEventListener("ended", videoEnded);
                 saveTimer = window.setInterval(function () { if (!v.paused) save(l, { positionSeconds: Math.floor(v.currentTime) }); }, 20000);
             }
-            player.appendChild(h("div", { class: "ac_row", style: "margin-top:12px" }, [
+            if (l.hasPdf) player.appendChild(pdfButton(l));
+            if (l.hasQuiz) player.appendChild(quizCard(l, gate));
+            else player.appendChild(h("div", { class: "ac_row", style: "margin-top:12px" }, [
                 h("button", { type: "button", class: "ac_btn b_line", text: l.completed ? "إلغاء علامة الإكمال" : "علّمه كمكتمل", onclick: function () { markDone(l, !l.completed); } })
             ]));
         } catch (e) {
@@ -282,6 +394,7 @@
         if (p.completed) E.toast("برافو! الدرس اتعلّم كمكتمل");
         var b = document.querySelector('.ac_lesson[data-id="' + l.id + '"]');
         if (b) { b.classList.toggle("is_done", l.completed); b.firstChild.textContent = l.completed ? "✓" : (l.kind === "exam" ? "؟" : "▶"); }
+        await refreshLessons();
     }
 
     E.requireUser("student").then(function (u) {

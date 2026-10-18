@@ -202,3 +202,23 @@
 }
 .ac_vp_bar .b_line{ color: #fff; border-color: rgba(255,255,255,.35); background: transparent; }
 .ac_vp_bar .b_dark{ background: var(--gold); color: #14201b; }
+
+/* ---------- الدروس المقفولة + الامتحان القصير تحت الفيديو ---------- */
+.ac_course .ac_cardimg{ width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; display: block; margin-bottom: 8px; background: var(--beige); }
+.ac_lesson.is_locked{ opacity: 0.55; cursor: not-allowed; background: #efe9de; }
+.ac_lesson.is_locked .ic{ filter: grayscale(0.2); }
+.ac_quizcard{ margin-top: 16px; padding: 16px; border: 2px dashed var(--gold); border-radius: 14px; background: #fffdf8; }
+.ac_pdfrow{ margin-top: 12px; }
+.ac_qa{ border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 0 12px; }
+.ac_qa legend{ font-weight: 800; color: var(--text); padding: 0 6px; }
+.ac_qopt{ display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-radius: 8px; cursor: pointer; }
+.ac_qopt:hover{ background: var(--beige); }
+.ac_qopt input{ width: 18px; height: 18px; accent-color: var(--gold); }
+.ac_result{ padding: 14px; border-radius: 12px; margin-bottom: 12px; }
+.ac_result strong{ font-size: 22px; }
+.ac_result.r_ok{ background: #e5f4ea; border: 2px solid #2e7d4f; }
+.ac_result.r_bad{ background: #fbeaea; border: 2px solid #b5382f; }
+.ac_quiz .ac_qcard{ border: 2px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 12px; display: grid; gap: 8px; background: #fff; }
+.ac_qrow{ display: flex; align-items: center; gap: 8px; }
+.ac_qrow input[type=text]{ flex: 1; }
+.ac_qrow input[type=radio]{ width: 18px; height: 18px; accent-color: var(--gold); }

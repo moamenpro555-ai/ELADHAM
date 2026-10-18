@@ -16,7 +16,7 @@
     function card(c, n) {
         var d = el("div");
         var a = el("a"); a.href = "dashboard.html?course=" + encodeURIComponent(c.id);
-        var img = el("img", "exam" + n); img.alt = c.title; img.loading = "lazy";
+        var img = el("img", "exam" + n + (c.hasCover ? " cvr" : "")); img.alt = c.title; img.loading = "lazy";
         img.src = c.hasCover ? String(window.ELADHAM_API || "").replace(/\/$/, "") + "/api/public/courses/" + encodeURIComponent(c.id) + "/cover" : "image/exam.svg";
         a.appendChild(img);
         d.appendChild(a);
