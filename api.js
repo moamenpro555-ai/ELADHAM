@@ -7,6 +7,7 @@
     var STAGES = { primary: "ابتدائي", prep: "إعدادي", secondary: "ثانوي" };
     var GRADES = ["", "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
     var MONTHS = ["", "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+    var SECTIONS = { courses: "كورسات", sessions: "حصص", homework: "واجب" };
     var KINDS = { session: "امتحان حصة", month: "امتحان شهر" };
     var LETTERS = ["أ", "ب", "ج", "د", "هـ"];
 
@@ -112,7 +113,7 @@
     }
 
     window.Eladham = {
-        STAGES: STAGES, GRADES: GRADES, MONTHS: MONTHS, KINDS: KINDS, LETTERS: LETTERS,
+        STAGES: STAGES, GRADES: GRADES, SECTIONS: SECTIONS, MONTHS: MONTHS, KINDS: KINDS, LETTERS: LETTERS,
         placeLabel: placeLabel, examWhen: examWhen, upload: upload, blobUrl: blobUrl,
         call: call, h: h, clear: clear, num: num, courseLabel: courseLabel, toast: toast, confirmBox: confirmBox,
         setCsrf: function (t) { csrf = t; },
@@ -124,7 +125,12 @@
                 if (role && u.role !== role) { location.replace(u.role === "teacher" ? "teacher.html" : "dashboard.html"); return null; }
                 return u;
             } catch (e) {
-                if (e.status === 401) { location.replace("login.html"); return null; }
+                if (e.status === 401) {
+                    // بنفتكر الصفحة اللي كان رايحلها (مثلاً كورس معين) ونرجّعه ليها بعد الدخول
+                    var here = location.pathname.split("/").pop() + location.search;
+                    location.replace("login.html?next=" + encodeURIComponent(here));
+                    return null;
+                }
                 throw e;
             }
         },

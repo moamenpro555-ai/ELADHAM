@@ -78,7 +78,7 @@
             var rows = courses.map(function (c) {
                 return h("tr", null, [
                     h("td", { text: c.title }),
-                    h("td", { text: E.courseLabel(c) }),
+                    h("td", { text: E.courseLabel(c) + " - " + (E.SECTIONS[c.section] || "") }),
                     h("td", { text: E.num(c.lessonCount) }),
                     h("td", { text: E.num(c.enrolledCount) }),
                     h("td", null, [h("span", { class: "ac_pill " + (c.isPublished ? "p_ok" : ""), text: c.isPublished ? "منشور" : "مخفي" })]),
@@ -108,17 +108,19 @@
         var desc = h("textarea", { id: "cf_desc", maxlength: "2000" }); desc.value = c ? c.description : "";
         var stage = stageSelect("cf_stage", c ? c.stage : "secondary");
         var grade = gradeSelect("cf_grade", c ? c.grade : 1);
+        var sect = h("select", { id: "cf_sect" }, Object.keys(E.SECTIONS).map(function (k) { return option(k, E.SECTIONS[k], (c ? c.section : "courses") === k); }));
         var pub = h("input", { type: "checkbox", id: "cf_pub" }); pub.checked = c ? c.isPublished : false;
         var msg = h("p", { class: "ac_msg", role: "alert" });
         var form = h("form", { class: "ac_form", novalidate: true }, [].concat(
             field("اسم الكورس", "cf_title", title), field("وصف مختصر (اختياري)", "cf_desc", desc),
             field("المرحلة", "cf_stage", stage), field("الصف", "cf_grade", grade),
-            [h("label", { class: "ac_check" }, [pub, "منشور (يظهر للطلاب المشتركين)"]), msg,
+            field("القسم اللي هيظهر فيه في صفحة المرحلة", "cf_sect", sect),
+            [h("label", { class: "ac_check" }, [pub, "منشور (الكارت بيظهر للكل، والدخول للمشتركين بس)"]), msg,
                 h("button", { type: "submit", class: "ac_btn b_dark", text: c ? "حفظ التعديلات" : "إنشاء الكورس" })]));
         form.addEventListener("submit", async function (ev) {
             ev.preventDefault(); msg.textContent = "";
             if (!title.value.trim()) { msg.textContent = "اكتب اسم الكورس."; return; }
-            var data = { title: title.value.trim(), description: desc.value.trim(), stage: stage.value, grade: Number(grade.value), isPublished: pub.checked };
+            var data = { title: title.value.trim(), description: desc.value.trim(), stage: stage.value, grade: Number(grade.value), section: sect.value, isPublished: pub.checked };
             try {
                 if (c) await E.call("PATCH", "/api/teacher/courses/" + c.id, data); else await E.call("POST", "/api/teacher/courses", data);
                 E.toast(c ? "اتحفظت التعديلات" : "اتعمل الكورس");
@@ -126,6 +128,33 @@
             } catch (e) { msg.textContent = e.message || "حصل خطأ"; }
         });
         return h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: c ? "تعديل الكورس" : "كورس جديد" }), form]);
+    }
+
+    // صورة الكورس (بتظهر على الكارت في صفحة المرحلة)
+    function coverCard(course) {
+        var card = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "صورة الكورس" })]);
+        var box = h("div");
+        if (course.hasCover) {
+            var im = h("img", { class: "ac_thumb", alt: "صورة الكورس" });
+            E.blobUrl("/api/teacher/courses/" + course.id + "/cover").then(function (u) { im.src = u; }, function () {});
+            box.appendChild(im);
+            box.appendChild(h("button", { type: "button", class: "ac_btn b_bad b_sm", text: "حذف الصورة", onclick: function () {
+                run(async function () { await E.call("DELETE", "/api/teacher/courses/" + course.id + "/cover"); await manageCourse(course.id); });
+            } }));
+        }
+        if (!course.isPublished) box.appendChild(h("p", { class: "ac_sub", text: "الكورس لسه مخفي: الكارت والصورة بيظهروا للكل بعد ما تنشره." }));
+        var file = h("input", { type: "file", accept: "image/png,image/jpeg,image/webp", id: "cv_file", "aria-label": "اختار صورة" });
+        card.appendChild(box);
+        card.appendChild(h("div", { class: "ac_form" }, [
+            h("label", { for: "cv_file", text: "ارفع صورة (PNG / JPG / WebP، أقل من 1 ميجا)" }), file,
+            h("button", { type: "button", class: "ac_btn b_gold", text: "رفع الصورة", onclick: function () {
+                var f = file.files[0];
+                if (!f) { E.toast("اختار صورة الأول", "bad"); return; }
+                if (f.size > 1048576) { E.toast("الصورة أكبر من 1 ميجا", "bad"); return; }
+                run(async function () { await E.upload("PUT", "/api/teacher/courses/" + course.id + "/cover", f); E.toast("اترفعت الصورة"); await manageCourse(course.id); });
+            } })
+        ]));
+        return card;
     }
 
     // ---------- إدارة كورس واحد: بياناته + الدروس + المشتركين ----------
@@ -138,6 +167,7 @@
         E.clear(body);
         body.appendChild(h("button", { type: "button", class: "ac_btn b_line", text: "رجوع للكورسات", onclick: function () { tab = "courses"; render(); }, style: "margin-bottom:16px" }));
         body.appendChild(courseForm(d.course, function () { return manageCourse(id); }));
+        body.appendChild(coverCard(d.course));
         body.appendChild(lessonsCard(d.course, d.lessons));
         body.appendChild(enrollCard(d.course, (enr && enr.enrollments) || []));
     }

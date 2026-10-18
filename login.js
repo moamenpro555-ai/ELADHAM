@@ -5,8 +5,14 @@
     var err = document.getElementById("ac_err");
     var go = document.getElementById("ac_go");
 
+    // الصفحة اللي نرجع ليها بعد الدخول: اسم ملف html في نفس الموقع بس (مفيش روابط خارجية)
+    function nextPage(u) {
+        var n = new URLSearchParams(location.search).get("next") || "";
+        if (u.role === "student" && /^[A-Za-z0-9_-]+\.html(\?[A-Za-z0-9_=&%.-]*)?$/.test(n)) return n;
+        return u.role === "teacher" ? "teacher.html" : "dashboard.html";
+    }
     // لو أنت داخل بالفعل، ودّيني على لوحتي
-    E.loadSession().then(function (u) { location.replace(u.role === "teacher" ? "teacher.html" : "dashboard.html"); }).catch(function () {});
+    E.loadSession().then(function (u) { location.replace(nextPage(u)); }).catch(function () {});
 
     form.addEventListener("submit", async function (ev) {
         ev.preventDefault();
@@ -17,7 +23,7 @@
         go.disabled = true;
         try {
             var u = await E.login(email, pass);
-            location.replace(u.role === "teacher" ? "teacher.html" : "dashboard.html");
+            location.replace(nextPage(u));
         } catch (e) {
             err.textContent = e.message || "حصل خطأ، جرّب تاني.";
             go.disabled = false;

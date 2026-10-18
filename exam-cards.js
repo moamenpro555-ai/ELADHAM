@@ -1,5 +1,5 @@
 // ================== بيحط امتحانات الطالب (من السيرفر) جوه كروت امتحانات الشهر والحصة ==================
-// بيشتغل في index3 (إعدادي) و index4 (ثانوي). الطالب غير المسجّل ما بيشوفش حاجة جديدة.
+// بيشتغل في index3 (إعدادي) و index4 (ثانوي) جوه قسم "امتحانات". الطالب غير المسجّل بيشوف رابط تسجيل الدخول.
 (function () {
     "use strict";
     var E = window.Eladham;
@@ -10,8 +10,10 @@
         var img = card.querySelector("img");
         return !!img && /exam\.svg$/.test(img.getAttribute("src") || "");
     }
-    function cardsOf(grid) {
-        return Array.prototype.filter.call(grid.children, function (c) { return c.tagName === "DIV" && c.querySelector("a > img"); });
+    function cardsOf(grid, kind) {
+        return Array.prototype.filter.call(grid.children, function (c) {
+            return c.tagName === "DIV" && c.querySelector("a > img") && (!kind || c.getAttribute("data-kind") === kind);
+        });
     }
     function fill(card, ex) {
         var a = card.querySelector("a"), img = card.querySelector("img"), p = card.querySelector("p");
@@ -23,12 +25,15 @@
             E.blobUrl("/api/exams/" + ex.id + "/cover").then(function (u) { img.src = u; }, function () {});
         }
     }
-    function addCard(grid, ex) {
-        var cards = cardsOf(grid), tpl = cards[0];
+    function addCard(grid, kind, ex) {
+        var cards = cardsOf(grid, kind), tpl = cards[0] || cardsOf(grid)[0];
         if (!tpl) return;
         var c = tpl.cloneNode(true);
+        c.removeAttribute("data-exam-id");
+        c.setAttribute("data-kind", kind);
         c.querySelector("img").setAttribute("src", "image/exam.svg");
-        grid.appendChild(c);
+        var last = cards[cards.length - 1] || tpl;
+        last.parentNode.insertBefore(c, last.nextSibling);
         fill(c, ex);
     }
     function hint(grid) {
@@ -44,12 +49,9 @@
     }
 
     function grids() {
-        var out = [];
-        Array.prototype.forEach.call(document.querySelectorAll("div"), function (d) {
-            var m = /(?:^|\s)part(\d+)_(7|8)(?:\s|$)/.exec(d.className || "");
-            if (m) out.push({ el: d, year: Number(m[1]), kind: m[2] === "7" ? "month" : "session" });
+        return Array.prototype.map.call(document.querySelectorAll('[data-area="exams"]'), function (d) {
+            return { el: d, grade: Number(d.getAttribute("data-grade")) };
         });
-        return out;
     }
 
     async function init() {
@@ -62,15 +64,12 @@
         } catch (e) { user = null; }
         if (!user) { gs.forEach(function (g) { hint(g.el); }); return; }
         if (user.role !== "student") return;
-        var years = []; gs.forEach(function (g) { if (years.indexOf(g.year) < 0) years.push(g.year); });
-        years.sort(function (a, b) { return a - b; });
         gs.forEach(function (g) {
-            var grade = years.indexOf(g.year) + 1;
-            var mine = list.filter(function (x) { return x.stage === stage && x.grade === grade && x.kind === g.kind; })
+            var mine = list.filter(function (x) { return x.stage === stage && x.grade === g.grade; })
                 .sort(function (x, y) { return (x.sessionNo ? 0 : 1) - (y.sessionNo ? 0 : 1); });
             mine.forEach(function (ex) {
-                var cards = cardsOf(g.el), target = null;
-                if (g.kind === "month") {
+                var cards = cardsOf(g.el, ex.kind), target = null;
+                if (ex.kind === "month") {
                     var name = "امتحان شهر " + E.MONTHS[ex.month];
                     cards.forEach(function (c) {
                         var p = c.querySelector("p");
@@ -83,7 +82,7 @@
                 } else {
                     cards.forEach(function (c) { if (!target && !c.getAttribute("data-exam-id") && isPlaceholder(c)) target = c; });
                 }
-                if (target) fill(target, ex); else addCard(g.el, ex);
+                if (target) fill(target, ex); else addCard(g.el, ex.kind, ex);
             });
         });
     }

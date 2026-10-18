@@ -203,6 +203,7 @@
     async function openCourse(id) {
         try {
             var d = await E.call("GET", "/api/courses/" + encodeURIComponent(id));
+            if (d.course.enrolled === false && user && user.role === "student") { E.toast("مش مشترك في الكورس ده. كلّم المدرس عشان يفعّله على حسابك.", "bad"); return; }
             current = d;
             renderCourse();
         } catch (e) { E.toast(e.message, "bad"); }
@@ -286,7 +287,8 @@
     E.requireUser("student").then(function (u) {
         if (!u) return;
         user = u;
-        return showHome();
+        var want = new URLSearchParams(location.search).get("course");
+        return showHome().then(function () { if (want && /^[0-9a-f-]{36}$/i.test(want)) return openCourse(want); });
     }).catch(function (e) {
         E.clear(root);
         root.appendChild(h("div", { class: "ac_card" }, [h("p", { class: "ac_msg", text: e.message || "حصل خطأ" })]));
