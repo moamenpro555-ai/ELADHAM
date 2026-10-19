@@ -49,19 +49,21 @@
             ]),
             (function () { return (pw = h("div", { class: "ac_hidden" }, [E.passwordForm({})])); })()
         ]));
-        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
-            return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(tab === t[0]), text: t[1], onclick: function () { tab = t[0]; render(); } });
+        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["registrations", "سجل بيانات الطلاب"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
+            return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(tab === t[0]), text: t[1] + (t[0] === "registrations" && pendingCount ? " (" + E.num(pendingCount) + " جديد)" : ""), onclick: function () { tab = t[0]; render(); } });
         }));
         root.appendChild(tabs);
         body = h("div", { id: "ac_body" });
         root.appendChild(body);
     }
     var pw;
+    var pendingCount = 0, regFilter = "pending", regQuery = "";
 
     async function render() {
         shell();
         if (tab === "courses") await coursesView();
         else if (tab === "students") await studentsView();
+        else if (tab === "registrations") await registrationsView();
         else if (ui.views[tab]) await ui.views[tab]();
     }
 
@@ -336,6 +338,49 @@
         return card;
     }
 
+    // ================= سجل بيانات الطلاب (اللي سجّلوا بنفسهم) =================
+    async function registrationsView() {
+        E.clear(body);
+        var d = null;
+        await run(async function () { d = await E.call("GET", "/api/teacher/registrations?status=" + (regFilter === "all" ? "" : regFilter) + (regQuery ? "&q=" + encodeURIComponent(regQuery) : "")); });
+        if (!d) return;
+        if (pendingCount !== d.counts.pending) { pendingCount = d.counts.pending; var t0 = document.querySelectorAll(".ac_tab")[2]; if (t0) t0.textContent = "سجل بيانات الطلاب" + (pendingCount ? " (" + E.num(pendingCount) + " جديد)" : ""); }
+        var filters = [["pending", "مستني التفعيل", d.counts.pending], ["approved", "مفعّل", d.counts.approved], ["rejected", "مرفوض", d.counts.rejected], ["all", "الكل", d.counts.pending + d.counts.approved + d.counts.rejected]];
+        var bar = h("div", { class: "ac_tabs", role: "tablist" }, filters.map(function (f) {
+            return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(regFilter === f[0]), text: f[1] + " (" + E.num(f[2]) + ")", onclick: function () { regFilter = f[0]; registrationsView(); } });
+        }));
+        var search = h("input", { class: "ac_in", type: "search", placeholder: "ابحث بالاسم أو الرقم القومي أو الإيميل", value: regQuery, "aria-label": "بحث" });
+        var timer = 0;
+        search.addEventListener("input", function () { window.clearTimeout(timer); timer = window.setTimeout(function () { regQuery = search.value.trim(); registrationsView(); }, 400); });
+        var card = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "سجل بيانات الطلاب" }),
+            h("p", { class: "ac_sub", text: "الطلاب اللي عملوا حساب بنفسهم. الحساب مش بيشتغل غير لما تفعّله، وبعد التفعيل اشترّكه في الكورسات من تبويب «الكورسات»." }), bar, search]);
+        if (!d.registrations.length) card.appendChild(h("p", { class: "ac_empty", text: regQuery ? "مفيش نتايج." : "مفيش تسجيلات هنا." }));
+        else card.appendChild(h("div", { class: "ac_tablewrap" }, [h("table", { class: "ac_table", style: "min-width:900px" }, [
+            h("thead", null, [h("tr", null, ["الاسم", "الرقم القومي", "المحافظة", "العنوان", "المرحلة والصف", "الإيميل", "تاريخ التسجيل", "الحالة", ""].map(function (t) { return h("th", { text: t }); }))]),
+            h("tbody", null, d.registrations.map(registrationRow))
+        ])]));
+        body.appendChild(card);
+    }
+
+    function registrationRow(r) {
+        var pill = r.approval === "pending" ? h("span", { class: "ac_pill p_wait", text: "مستني التفعيل" }) : r.approval === "approved" ? h("span", { class: "ac_pill p_ok", text: r.isActive ? "مفعّل" : "موقوف" }) : h("span", { class: "ac_pill p_bad", text: "مرفوض" });
+        function setApproval(v, okMsg) { return function () { run(async function () { await E.call("PATCH", "/api/teacher/students/" + r.id, { approval: v }); E.toast(okMsg); await registrationsView(); }); }; }
+        var acts = [];
+        if (r.approval !== "approved") acts.push(h("button", { type: "button", class: "ac_btn b_gold b_sm", text: "تفعيل الحساب", onclick: setApproval("approved", "اتفعّل حساب " + r.name) }));
+        if (r.approval === "pending") acts.push(h("button", { type: "button", class: "ac_btn b_line b_sm", text: "رفض", onclick: async function () {
+            if (await E.confirmBox("ترفض تسجيل " + r.name + "؟ مش هيعرف يدخل.", "ارفض")) setApproval("rejected", "اترفض التسجيل")();
+        } }));
+        if (r.approval !== "approved") acts.push(h("button", { type: "button", class: "ac_btn b_bad b_sm", text: "حذف", onclick: async function () {
+            if (!(await E.confirmBox("تمسح تسجيل " + r.name + " نهائيًا؟ الرقم القومي بتاعه هيبقى متاح للتسجيل تاني.", "احذف"))) return;
+            run(async function () { await E.call("DELETE", "/api/teacher/registrations/" + r.id); E.toast("اتحذف التسجيل"); await registrationsView(); });
+        } }));
+        return h("tr", null, [
+            h("td", { text: r.name }), h("td", { text: r.nationalId || "-", dir: "ltr" }), h("td", { text: r.governorate || "-" }), h("td", { text: r.address || "-" }),
+            h("td", { text: (E.STAGES[r.stage] || "-") + " - " + (r.grade ? "الصف " + E.GRADES[r.grade] : "-") }), h("td", { text: r.email, dir: "ltr" }),
+            h("td", { text: fmtDate(r.createdAt) }), h("td", null, [pill]), h("td", null, [h("div", { class: "ac_row" }, acts)])
+        ]);
+    }
+
     // ================= الطلاب =================
     var query = "";
     async function loadStudents() { students = (await E.call("GET", "/api/teacher/students?limit=200" + (query ? "&q=" + encodeURIComponent(query) : ""))).students; }
@@ -447,9 +492,10 @@
         body.appendChild(card);
     }
 
-    E.requireUser("teacher").then(function (u) {
+    E.requireUser("teacher").then(async function (u) {
         if (!u) return;
         user = u;
+        try { pendingCount = (await E.call("GET", "/api/teacher/registrations?status=pending")).counts.pending; } catch (e) { /* العدّاد اختياري */ }
         return render();
     }).catch(function (e) {
         E.clear(root);

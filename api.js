@@ -134,8 +134,8 @@
                 throw e;
             }
         },
-        login: async function (email, password) {
-            var d = await call("POST", "/api/auth/login", { email: email, password: password });
+        login: async function (identifier, password) {
+            var d = await call("POST", "/api/auth/login", { identifier: identifier, password: password });
             csrf = d.csrfToken;
             return d.user;
         },

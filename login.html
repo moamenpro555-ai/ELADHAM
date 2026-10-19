@@ -25,15 +25,16 @@
         <div class="ac_wrap ac_narrow">
             <div class="ac_card">
                 <h1 class="ac_h1">تسجيل الدخول</h1>
-                <p class="ac_sub">ادخل بالإيميل وكلمة السر اللي أخدتها من المدرس.</p>
+                <p class="ac_sub">ادخل بالرقم القومي (أو الإيميل) وكلمة السر.</p>
                 <form class="ac_form" id="ac_login" novalidate>
-                    <label for="ac_email">الإيميل</label>
-                    <input type="email" id="ac_email" autocomplete="username" inputmode="email" dir="ltr" required>
+                    <label for="ac_email">الرقم القومي أو الإيميل</label>
+                    <input type="text" id="ac_email" autocomplete="username" inputmode="text" dir="ltr" maxlength="254" required>
                     <label for="ac_pass">كلمة السر</label>
                     <input type="password" id="ac_pass" autocomplete="current-password" required>
                     <p class="ac_msg" id="ac_err" role="alert"></p>
                     <button type="submit" class="ac_btn b_dark" id="ac_go">دخول</button>
                 </form>
+                <p class="ac_sub">لسه معندكش حساب؟ <a href="register.html" class="ac_a">إنشاء حساب جديد</a></p>
                 <p class="ac_sub">نسيت كلمة السر؟ كلّم المدرس وهيبعتلك رابط جديد.</p>
             </div>
         </div>

@@ -222,3 +222,14 @@
 .ac_qrow{ display: flex; align-items: center; gap: 8px; }
 .ac_qrow input[type=text]{ flex: 1; }
 .ac_qrow input[type=radio]{ width: 18px; height: 18px; accent-color: var(--gold); }
+
+/* ---------- إنشاء حساب جديد ---------- */
+.ac_a{ color: var(--gold); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.ac_trap{ position: absolute !important; inset-inline-start: -9999px; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ac_regok{ display: grid; gap: 6px; margin: 12px 0; }
+.ac_regok .ac_secret{ display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ac_regok code{ font-size: 18px; word-break: break-all; }
+.ac_btn.ac_disabled{ opacity: .45; pointer-events: auto; cursor: not-allowed; }
+.ac_pill.p_wait{ background: #fff4d6; color: #8a6100; border-color: transparent; }
+
+.ac_card .ac_tabs{ margin-top: 12px; }
