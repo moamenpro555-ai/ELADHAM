@@ -158,8 +158,8 @@
             if (!d.exams.length) { card.appendChild(h("p", { class: "ac_empty", text: "مفيش امتحانات متاحة لصفك دلوقتي." })); return card; }
             var groups = [], seen = {};
             d.exams.forEach(function (x) {
-                var key = x.kind === "month" ? "m" + x.month : "s";
-                if (!seen[key]) { seen[key] = { title: x.kind === "month" ? "امتحانات شهر " + E.MONTHS[x.month] : "امتحانات الحصة", items: [], order: x.kind === "month" ? 100 + x.month : 0 }; groups.push(seen[key]); }
+                var key = x.kind === "month" ? "m" + x.month : (x.kind === "homework" ? "h" : "s");
+                if (!seen[key]) { seen[key] = { title: x.kind === "month" ? "امتحانات شهر " + E.MONTHS[x.month] : (x.kind === "homework" ? "الواجب" : "امتحانات الحصة"), items: [], order: x.kind === "month" ? 100 + x.month : (x.kind === "homework" ? 200 : 0) }; groups.push(seen[key]); }
                 seen[key].items.push(x);
             });
             groups.sort(function (a, b) { return a.order - b.order; });

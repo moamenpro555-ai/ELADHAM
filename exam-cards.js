@@ -20,6 +20,7 @@
         a.setAttribute("href", "paper.html?id=" + ex.id);
         img.setAttribute("alt", ex.title);
         if (p) p.textContent = ex.title;
+        if (!ex.hasCover) img.setAttribute("src", "image/exam.svg");
         card.setAttribute("data-exam-id", String(ex.id));
         if (ex.hasCover) {
             E.blobUrl("/api/exams/" + ex.id + "/cover").then(function (u) { img.src = u; img.classList.add("cvr"); }, function () {});
@@ -68,6 +69,7 @@
             var mine = list.filter(function (x) { return x.stage === stage && x.grade === g.grade; })
                 .sort(function (x, y) { return (x.sessionNo ? 0 : 1) - (y.sessionNo ? 0 : 1); });
             mine.forEach(function (ex) {
+                if (ex.kind === "homework") return; // الواجب بيتحط في قسم الواجب تحت
                 var cards = cardsOf(g.el, ex.kind), target = null;
                 if (ex.kind === "month") {
                     var name = "امتحان شهر " + E.MONTHS[ex.month];
@@ -86,5 +88,34 @@
             });
         });
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+    // ورقة الواجب (صور / PDF): بتظهر في قسم "واجب" بس، للمرحلة والصف اللي المدرس حدده
+    async function homework() {
+        var areas = Array.prototype.slice.call(document.querySelectorAll('[data-area="homework"]'));
+        if (!areas.length) return;
+        try { await (E.coursesReady || Promise.resolve()); } catch (e) { /* */ }
+        var user = null, list = [];
+        try {
+            user = await E.loadSession();
+            if (user && user.role === "student") list = (await E.call("GET", "/api/exams")).exams;
+        } catch (e) { return; }
+        if (!user || user.role !== "student") return;
+        areas.forEach(function (area) {
+            var grade = Number(area.getAttribute("data-grade"));
+            var mine = list.filter(function (x) { return x.kind === "homework" && x.stage === stage && x.grade === grade; });
+            if (!mine.length) return;
+            Array.prototype.forEach.call(area.querySelectorAll('[class^="hint"]'), function (n) { n.remove(); });
+            mine.forEach(function (ex) {
+                var d = document.createElement("div"); d.setAttribute("data-exam-id", String(ex.id));
+                var a = document.createElement("a"); a.href = "paper.html?id=" + encodeURIComponent(ex.id);
+                var img = document.createElement("img"); img.className = "exam" + grade; img.alt = ex.title; img.loading = "lazy"; img.src = "image/exam.svg";
+                if (ex.hasCover) E.blobUrl("/api/exams/" + ex.id + "/cover").then(function (u) { img.src = u; img.classList.add("cvr"); }, function () {});
+                a.appendChild(img); d.appendChild(a);
+                var nm = document.createElement("p"); nm.className = "name" + grade; nm.textContent = ex.title; d.appendChild(nm);
+                var nt = document.createElement("p"); nt.className = "note" + grade; nt.textContent = (ex.description ? ex.description + " - " : "") + E.num(ex.questionCount) + " سؤال"; d.appendChild(nt);
+                area.appendChild(d);
+            });
+        });
+    }
+    function start() { init(); homework(); }
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
 })();

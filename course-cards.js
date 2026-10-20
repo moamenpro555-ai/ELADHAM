@@ -45,5 +45,9 @@
             mine.forEach(function (c) { p.appendChild(card(c, grade)); });
         });
     }
-    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+    // exam-cards.js بيستنى الوعد ده علشان يضيف كروت الواجب بعد الكورسات
+    E.coursesReady = new Promise(function (resolve) {
+        function go() { init().then(resolve, resolve); }
+        if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", go); else go();
+    });
 })();
