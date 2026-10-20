@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>المتوكل للنقل | صفحة السائق</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+.big{width:100%;padding:18px;font-size:1.2rem;border-radius:14px}
+.pulse{display:inline-block;width:12px;height:12px;border-radius:50%;background:#2a9d5c;margin-left:6px;animation:pl 1.4s infinite}
+@keyframes pl{50%{opacity:.25}}
+.off{background:#999;animation:none}
+.err{color:#c0392b;font-weight:700}
+a[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+<div class="brand"><div><h1>شركة المتوكل للنقل</h1><small>AL MUTAWAKEL TRANSPORT</small></div></div>
+<div class="road"></div>
+</div></header>
+<main class="wrap">
+<div class="card" style="text-align:center">
+<h2 id="hi" style="margin-top:0">جاري التحميل...</h2>
+<p class="mut" id="dest"></p>
+<p><span class="pulse off" id="dot"></span><b id="st">المشاركة متوقفة</b></p>
+<button class="btn g big" id="go" onclick="toggle()">ابدأ مشاركة موقعي</button>
+<p><a id="nav" class="btn big" hidden target="_blank" rel="noopener" style="display:block;text-decoration:none;background:var(--navy);color:#fff">افتح الطريق في خرائط جوجل</a></p>
+<p id="info" class="mut"></p>
+<p id="err" class="err"></p>
+</div>
+<div class="card mut">
+<b>تعليمات:</b> اضغط "ابدأ" واسمح للمتصفح بتحديد الموقع، وسيب الصفحة مفتوحة وشاشة الموبايل شغالة أثناء الرحلة. الموقع بيتبعت للشركة كل دقيقة تقريبًا.
+</div>
+</main>
+<script src="config.js"></script>
+<script src="common.js"></script>
+<script src="driver.js"></script>
+</body>
+</html>
