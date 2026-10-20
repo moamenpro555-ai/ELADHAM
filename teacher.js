@@ -13,7 +13,7 @@
     async function run(fn) {
         try { return await fn(); } catch (e) { E.toast(e.message || "حصل خطأ", "bad"); return undefined; }
     }
-    var ui = window.TeacherUI = { run: run, views: {}, E: E };
+    var ui = window.TeacherUI = { run: run, views: {}, E: E, courseCards: [], pendingSales: 0 };
     function field(label, id, control) { return [h("label", { for: id, text: label }), control]; }
     function option(value, text, sel) { return h("option", { value: String(value), text: text, selected: sel ? true : false }); }
     function stageSelect(id, val) { return h("select", { id: id }, Object.keys(E.STAGES).map(function (k) { return option(k, E.STAGES[k], k === val); })); }
@@ -49,8 +49,8 @@
             ]),
             (function () { return (pw = h("div", { class: "ac_hidden" }, [E.passwordForm({})])); })()
         ]));
-        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["registrations", "سجل بيانات الطلاب"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
-            return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(tab === t[0]), text: t[1] + (t[0] === "registrations" && pendingCount ? " (" + E.num(pendingCount) + " جديد)" : ""), onclick: function () { tab = t[0]; render(); } });
+        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["registrations", "سجل بيانات الطلاب"], ["sales", "سجل المبيعات"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
+            return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(tab === t[0]), text: t[1] + (t[0] === "registrations" && pendingCount ? " (" + E.num(pendingCount) + " جديد)" : "") + (t[0] === "sales" && ui.pendingSales ? " (" + E.num(ui.pendingSales) + " جديد)" : ""), onclick: function () { tab = t[0]; render(); } });
         }));
         root.appendChild(tabs);
         body = h("div", { id: "ac_body" });
@@ -81,6 +81,7 @@
                 return h("tr", null, [
                     h("td", { text: c.title }),
                     h("td", { text: E.courseLabel(c) + " - " + (E.SECTIONS[c.section] || "") }),
+                    h("td", { text: modeLabel(c) }),
                     h("td", { text: E.num(c.lessonCount) }),
                     h("td", { text: E.num(c.enrolledCount) }),
                     h("td", null, [h("span", { class: "ac_pill " + (c.isPublished ? "p_ok" : ""), text: c.isPublished ? "منشور" : "مخفي" })]),
@@ -97,11 +98,16 @@
                 ]);
             });
             card.appendChild(h("div", { class: "ac_tablewrap" }, [h("table", { class: "ac_table" }, [
-                h("thead", null, [h("tr", null, ["الكورس", "المرحلة", "الدروس", "المشتركين", "الحالة", ""].map(function (t) { return h("th", { text: t }); }))]),
+                h("thead", null, [h("tr", null, ["الكورس", "المرحلة", "الاشتراك", "الدروس", "المشتركين", "الحالة", ""].map(function (t) { return h("th", { text: t }); }))]),
                 h("tbody", null, rows)
             ])]));
         }
         body.appendChild(card);
+    }
+
+    function modeLabel(c) {
+        var m = { free: "مجاني", paid: "فوري", code: "كود", code_or_paid: "كود وفوري" }[c.accessMode] || c.accessMode;
+        return m + (c.price > 0 && c.accessMode !== "code" && c.accessMode !== "free" ? " - " + E.num(c.price) + " ج" : "");
     }
 
     // نموذج إنشاء/تعديل كورس
@@ -111,24 +117,33 @@
         var stage = stageSelect("cf_stage", c ? c.stage : "secondary");
         var grade = gradeSelect("cf_grade", c ? c.grade : 1);
         var sect = h("select", { id: "cf_sect" }, Object.keys(E.SECTIONS).map(function (k) { return option(k, E.SECTIONS[k], (c ? c.section : "courses") === k); }));
+        var MODES = [["free", "مجاني (أي طالب يفتحه بضغطة)"], ["paid", "فوري (دفع بفودافون كاش + صورة الإيصال)"], ["code", "كود (الطالب بيدخل كود إنت إديته له)"], ["code_or_paid", "كود وفوري معًا"]];
+        var mode = h("select", { id: "cf_mode" }, MODES.map(function (m) { return option(m[0], m[1], (c ? c.accessMode : "code") === m[0]); }));
+        var price = h("input", { id: "cf_price", type: "number", min: "0", max: "100000", step: "1", value: c ? String(c.price || 0) : "0", dir: "ltr" });
+        var priceRow = field("سعر الكورس بالجنيه (بيظهر للطالب)", "cf_price", price);
+        function syncMode() { var paid = mode.value === "paid" || mode.value === "code_or_paid"; priceRow.forEach(function (n) { n.style.display = paid ? "" : "none"; }); }
+        mode.addEventListener("change", syncMode);
         var pub = h("input", { type: "checkbox", id: "cf_pub" }); pub.checked = c ? c.isPublished : false;
         var msg = h("p", { class: "ac_msg", role: "alert" });
         var form = h("form", { class: "ac_form", novalidate: true }, [].concat(
             field("اسم الكورس", "cf_title", title), field("وصف مختصر (اختياري)", "cf_desc", desc),
             field("المرحلة", "cf_stage", stage), field("الصف", "cf_grade", grade),
             field("القسم اللي هيظهر فيه في صفحة المرحلة", "cf_sect", sect),
+            field("طريقة الاشتراك في الكورس", "cf_mode", mode), priceRow,
             [h("label", { class: "ac_check" }, [pub, "منشور (الكارت بيظهر للكل، والدخول للمشتركين بس)"]), msg,
                 h("button", { type: "submit", class: "ac_btn b_dark", text: c ? "حفظ التعديلات" : "إنشاء الكورس" })]));
         form.addEventListener("submit", async function (ev) {
             ev.preventDefault(); msg.textContent = "";
             if (!title.value.trim()) { msg.textContent = "اكتب اسم الكورس."; return; }
-            var data = { title: title.value.trim(), description: desc.value.trim(), stage: stage.value, grade: Number(grade.value), section: sect.value, isPublished: pub.checked };
+            var data = { title: title.value.trim(), description: desc.value.trim(), stage: stage.value, grade: Number(grade.value), section: sect.value, accessMode: mode.value, isPublished: pub.checked };
+            if (mode.value === "paid" || mode.value === "code_or_paid") { data.price = Number(price.value); if (!(data.price > 0)) { msg.textContent = "حدّد سعر الكورس (أكبر من صفر)."; return; } } else data.price = 0;
             try {
                 if (c) await E.call("PATCH", "/api/teacher/courses/" + c.id, data); else await E.call("POST", "/api/teacher/courses", data);
                 E.toast(c ? "اتحفظت التعديلات" : "اتعمل الكورس");
                 if (onDone) await onDone(); else await coursesView();
             } catch (e) { msg.textContent = e.message || "حصل خطأ"; }
         });
+        syncMode();
         return h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: c ? "تعديل الكورس" : "كورس جديد" }), form]);
     }
 
@@ -172,6 +187,7 @@
         body.appendChild(coverCard(d.course));
         body.appendChild(lessonsCard(d.course, d.lessons));
         body.appendChild(enrollCard(d.course, (enr && enr.enrollments) || []));
+        ui.courseCards.forEach(function (fn) { var n = fn(d.course); if (n) body.appendChild(n); });
     }
 
     function lessonsCard(course, lessons) {
@@ -349,14 +365,14 @@
         var bar = h("div", { class: "ac_tabs", role: "tablist" }, filters.map(function (f) {
             return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(regFilter === f[0]), text: f[1] + " (" + E.num(f[2]) + ")", onclick: function () { regFilter = f[0]; registrationsView(); } });
         }));
-        var search = h("input", { class: "ac_in", type: "search", placeholder: "ابحث بالاسم أو الرقم القومي أو الإيميل", value: regQuery, "aria-label": "بحث" });
+        var search = h("input", { class: "ac_in", type: "search", placeholder: "ابحث بالاسم أو التليفون أو الكود أو الإيميل", value: regQuery, "aria-label": "بحث" });
         var timer = 0;
         search.addEventListener("input", function () { window.clearTimeout(timer); timer = window.setTimeout(function () { regQuery = search.value.trim(); registrationsView(); }, 400); });
         var card = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "سجل بيانات الطلاب" }),
             h("p", { class: "ac_sub", text: "الطلاب اللي عملوا حساب بنفسهم. الحساب مش بيشتغل غير لما تفعّله، وبعد التفعيل اشترّكه في الكورسات من تبويب «الكورسات»." }), bar, search]);
         if (!d.registrations.length) card.appendChild(h("p", { class: "ac_empty", text: regQuery ? "مفيش نتايج." : "مفيش تسجيلات هنا." }));
-        else card.appendChild(h("div", { class: "ac_tablewrap" }, [h("table", { class: "ac_table", style: "min-width:900px" }, [
-            h("thead", null, [h("tr", null, ["الاسم", "الرقم القومي", "المحافظة", "العنوان", "المرحلة والصف", "الإيميل", "تاريخ التسجيل", "الحالة", ""].map(function (t) { return h("th", { text: t }); }))]),
+        else card.appendChild(h("div", { class: "ac_tablewrap" }, [h("table", { class: "ac_table", style: "min-width:1100px" }, [
+            h("thead", null, [h("tr", null, ["الكود", "الاسم", "تليفون الطالب", "تليفون ولي الأمر", "المحافظة", "العنوان", "المرحلة والصف", "الإيميل", "تاريخ التسجيل", "الحالة", ""].map(function (t) { return h("th", { text: t }); }))]),
             h("tbody", null, d.registrations.map(registrationRow))
         ])]));
         body.appendChild(card);
@@ -371,11 +387,11 @@
             if (await E.confirmBox("ترفض تسجيل " + r.name + "؟ مش هيعرف يدخل.", "ارفض")) setApproval("rejected", "اترفض التسجيل")();
         } }));
         if (r.approval !== "approved") acts.push(h("button", { type: "button", class: "ac_btn b_bad b_sm", text: "حذف", onclick: async function () {
-            if (!(await E.confirmBox("تمسح تسجيل " + r.name + " نهائيًا؟ الرقم القومي بتاعه هيبقى متاح للتسجيل تاني.", "احذف"))) return;
+            if (!(await E.confirmBox("تمسح تسجيل " + r.name + " نهائيًا؟ رقم تليفونه هيبقى متاح للتسجيل تاني.", "احذف"))) return;
             run(async function () { await E.call("DELETE", "/api/teacher/registrations/" + r.id); E.toast("اتحذف التسجيل"); await registrationsView(); });
         } }));
         return h("tr", null, [
-            h("td", { text: r.name }), h("td", { text: r.nationalId || "-", dir: "ltr" }), h("td", { text: r.governorate || "-" }), h("td", { text: r.address || "-" }),
+            h("td", { text: r.studentCode ? "#" + r.studentCode : "-" }), h("td", { text: r.name }), h("td", { text: r.phone || "-", dir: "ltr" }), h("td", { text: r.guardianPhone || "-", dir: "ltr" }), h("td", { text: r.governorate || "-" }), h("td", { text: r.address || "-" }),
             h("td", { text: (E.STAGES[r.stage] || "-") + " - " + (r.grade ? "الصف " + E.GRADES[r.grade] : "-") }), h("td", { text: r.email, dir: "ltr" }),
             h("td", { text: fmtDate(r.createdAt) }), h("td", null, [pill]), h("td", null, [h("div", { class: "ac_row" }, acts)])
         ]);
@@ -396,7 +412,7 @@
         var card = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "الطلاب (" + E.num(students.length) + ")" }), search]);
         if (!students.length) card.appendChild(h("p", { class: "ac_empty", text: query ? "مفيش نتايج." : "لسه مفيش طلاب. ضيف أول طالب من النموذج اللي فوق." }));
         else card.appendChild(h("div", { class: "ac_tablewrap" }, [h("table", { class: "ac_table" }, [
-            h("thead", null, [h("tr", null, ["الاسم", "الإيميل", "المرحلة والصف", "الحالة", "كورسات", "دروس مكتملة", "آخر نشاط", ""].map(function (t) { return h("th", { text: t }); }))]),
+            h("thead", null, [h("tr", null, ["الكود", "الاسم", "التليفون / الإيميل", "المرحلة والصف", "الحالة", "كورسات", "دروس مكتملة", "آخر نشاط", ""].map(function (t) { return h("th", { text: t }); }))]),
             h("tbody", null, students.map(studentRow))
         ])]));
         body.appendChild(card);
@@ -404,7 +420,7 @@
 
     function studentRow(s) {
         return h("tr", null, [
-            h("td", { text: s.name }), h("td", { text: s.email, dir: "ltr" }), h("td", null, [placeCell(s)]),
+            h("td", { text: s.studentCode ? "#" + s.studentCode : "-" }), h("td", { text: s.name }), h("td", { dir: "ltr", text: (s.phone ? s.phone + " | " : "") + s.email }), h("td", null, [placeCell(s)]),
             h("td", null, [h("span", { class: "ac_pill " + (s.isActive ? "p_ok" : "p_bad"), text: s.isActive ? "نشط" : "موقوف" }), s.mustChangePassword ? h("span", { class: "ac_pill", text: "لسه مغيّرش كلمة السر", style: "margin-inline-start:6px" }) : null]),
             h("td", { text: E.num(s.courseCount) }), h("td", { text: E.num(s.completedLessons) }), h("td", { text: fmtDate(s.lastActivity) }),
             h("td", null, [h("div", { class: "ac_row" }, [

@@ -107,7 +107,7 @@
         var pwBox = user.mustChangePassword ? null : h("div", { class: "ac_hidden", id: "ac_pwbox" }, [E.passwordForm({})]);
         return h("div", { class: "ac_card" }, [
             h("div", { class: "ac_top" }, [
-                h("div", null, [h("h1", { class: "ac_h1", text: "أهلًا يا " + user.name }), h("p", { class: "ac_sub", text: user.email, dir: "ltr" })]),
+                h("div", null, [h("h1", { class: "ac_h1", text: "أهلًا يا " + user.name }), h("p", { class: "ac_sub", text: (user.studentCode ? "كود الطالب: #" + user.studentCode + " | " : "") + user.email })]),
                 h("div", { class: "ac_row" }, [
                     pwBox ? h("button", { type: "button", class: "ac_btn b_line", text: "تغيير كلمة السر", onclick: function () { pwBox.classList.toggle("ac_hidden"); } }) : null,
                     h("button", { type: "button", class: "ac_btn b_dark", text: "تسجيل الخروج", onclick: function () { E.logout(); } })
@@ -136,12 +136,12 @@
             var others = d.courses.filter(function (c) { return !c.enrolled; });
             E.clear(box);
             box.appendChild(h("h2", { class: "ac_h2", text: "كورساتي" }));
-            if (!mine.length) box.appendChild(h("p", { class: "ac_empty", text: "لسه مفيش كورسات مفعّلة على حسابك. كلّم المدرس عشان يفعّلها." }));
+            if (!mine.length) box.appendChild(h("p", { class: "ac_empty", text: "لسه مفيش كورسات مفعّلة على حسابك. اشترك في كورس من القايمة اللي تحت." }));
             else box.appendChild(h("div", { class: "ac_grid" }, mine.map(courseCard)));
             root.appendChild(await examsCard());
             if (others.length) {
                 var more = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "كورسات تانية متاحة" }),
-                    h("p", { class: "ac_sub", text: "كلّم المدرس لو عايز تشترك فيها." }),
+                    h("p", { class: "ac_sub", text: "اضغط «اشترك في الكورس» وكمّل بالكود أو بفودافون كاش." }),
                     h("div", { class: "ac_grid" }, others.map(courseCard))]);
                 root.appendChild(more);
             }
@@ -185,6 +185,7 @@
         return h("a", { class: "ac_course", href: "paper.html?id=" + encodeURIComponent(x.id), style: "text-decoration:none" }, kids);
     }
 
+    function priceText(c) { return c.accessMode === "free" ? "مجاني" : (c.accessMode === "code" ? "بالكود" : E.num(c.price) + " ج"); }
     function courseCard(c) {
         var inner = [
             c.hasCover ? h("img", { class: "ac_cardimg", alt: "", loading: "lazy", src: String(window.ELADHAM_API || "").replace(/\/$/, "") + "/api/public/courses/" + encodeURIComponent(c.id) + "/cover" }) : null,
@@ -197,14 +198,15 @@
             inner.push(h("span", { class: "ac_course_m", text: E.num(c.completedCount) + " من " + E.num(c.lessonCount) + " درس (" + E.num(c.progressPercent) + "٪)" }));
             return h("button", { type: "button", class: "ac_course", onclick: function () { openCourse(c.id); } }, inner);
         }
-        inner.push(h("span", { class: "ac_pill", text: "غير مشترك" }));
-        return h("div", { class: "ac_course is_locked" }, inner);
+        inner.push(h("span", { class: "ac_pill", text: priceText(c) }));
+        inner.push(h("span", { class: "ac_btn b_dark b_sm", text: "اشترك في الكورس" }));
+        return h("a", { class: "ac_course", href: "subscribe.html?course=" + encodeURIComponent(c.id), style: "text-decoration:none" }, inner);
     }
 
     async function openCourse(id) {
         try {
             var d = await E.call("GET", "/api/courses/" + encodeURIComponent(id));
-            if (d.course.enrolled === false && user && user.role === "student") { E.toast("مش مشترك في الكورس ده. كلّم المدرس عشان يفعّله على حسابك.", "bad"); return; }
+            if (d.course.enrolled === false && user && user.role === "student") { location.replace("subscribe.html?course=" + encodeURIComponent(id)); return; }
             current = d;
             renderCourse();
         } catch (e) { E.toast(e.message, "bad"); }

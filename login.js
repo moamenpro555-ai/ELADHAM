@@ -19,7 +19,7 @@
         err.textContent = "";
         var email = document.getElementById("ac_email").value.trim();
         var pass = document.getElementById("ac_pass").value;
-        if (!email || !pass) { err.textContent = "اكتب الرقم القومي (أو الإيميل) وكلمة السر."; return; }
+        if (!email || !pass) { err.textContent = "اكتب رقم تليفونك (أو الإيميل) وكلمة السر."; return; }
         go.disabled = true;
         try {
             var u = await E.login(email, pass);

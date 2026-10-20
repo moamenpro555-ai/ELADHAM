@@ -21,8 +21,12 @@
         a.appendChild(img);
         d.appendChild(a);
         d.appendChild(el("p", "name" + n, c.title));
-        var meta = (c.description ? c.description + " - " : "") + E.num(c.lessonCount) + " درس. الدخول للمشتركين بس.";
+        var meta = (c.description ? c.description + " - " : "") + E.num(c.lessonCount) + " درس.";
         d.appendChild(el("p", "note" + n, meta));
+        var price = c.accessMode === "free" ? "مجاني" : (c.accessMode === "code" ? "بالكود" : (c.price > 0 ? E.num(c.price) + " جنيه" : ""));
+        if (price) d.appendChild(el("p", "card_price", price));
+        var b = el("a", "buy_btn", "اشترك في الكورس"); b.href = "subscribe.html?course=" + encodeURIComponent(c.id);
+        d.appendChild(b);
         return d;
     }
 
