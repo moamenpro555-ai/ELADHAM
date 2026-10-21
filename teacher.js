@@ -118,6 +118,7 @@
         var desc = h("textarea", { id: "cf_desc", maxlength: "2000" }); desc.value = c ? c.description : "";
         var stage = stageSelect("cf_stage", c ? c.stage : "secondary");
         var grade = gradeSelect("cf_grade", c ? c.grade : 1);
+        var gradeField = null, sectField = null;
         var sect = h("select", { id: "cf_sect" }, Object.keys(E.SECTIONS).filter(function (k) { return k !== "sessions" || (c && c.section === "sessions"); }).map(function (k) { return option(k, E.SECTIONS[k], (c ? c.section : "courses") === k); }));
         var MODES = [["free", "مجاني (أي طالب يفتحه بضغطة)"], ["paid", "فوري (دفع بفودافون كاش + صورة الإيصال)"], ["code", "كود (الطالب بيدخل كود إنت إديته له)"], ["code_or_paid", "كود وفوري معًا"]];
         var mode = h("select", { id: "cf_mode" }, MODES.map(function (m) { return option(m[0], m[1], (c ? c.accessMode : "code") === m[0]); }));
@@ -145,7 +146,17 @@
                 if (onDone) await onDone(); else await coursesView();
             } catch (e) { msg.textContent = e.message || "حصل خطأ"; }
         });
-        syncMode();
+        // «الدورات» = المستويات الأول/التاني/التالت (بدون قسم حصص/واجب)
+        function syncStage() {
+            var gen = stage.value === "general", cur = Number(grade.value) || 1;
+            Array.prototype.forEach.call(grade.options, function (o) { o.textContent = (gen ? "المستوى " : "الصف ") + E.GRADES[Number(o.value)]; o.disabled = gen && Number(o.value) > 3; o.hidden = o.disabled; });
+            if (gen && cur > 3) grade.value = "1";
+            if (gen) sect.value = "courses";
+            [sect.previousSibling, sect].forEach(function (n) { if (n && n.style) n.style.display = gen ? "none" : ""; });
+            var lbl = form.querySelector('label[for="cf_grade"]'); if (lbl) lbl.textContent = gen ? "المستوى" : "الصف";
+        }
+        stage.addEventListener("change", syncStage);
+        syncMode(); syncStage();
         return h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: c ? "تعديل الكورس" : "كورس جديد" }), form]);
     }
 

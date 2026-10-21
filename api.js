@@ -6,7 +6,7 @@
     var BASE = String(window.ELADHAM_API || "").replace(/\/$/, "");
     var csrf = null;
 
-    var STAGES = { primary: "ابتدائي", prep: "إعدادي", secondary: "ثانوي" };
+    var STAGES = { primary: "ابتدائي", prep: "إعدادي", secondary: "ثانوي", general: "الدورات" };
     var GRADES = ["", "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
     var MONTHS = ["", "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
     var SECTIONS = { courses: "كورسات", sessions: "حصص", homework: "واجب" };
@@ -57,7 +57,7 @@
     }
     function clear(n) { while (n.firstChild) n.removeChild(n.firstChild); return n; }
     function num(n) { return Number(n).toLocaleString("ar-EG"); }
-    function courseLabel(c) { return (STAGES[c.stage] || c.stage) + " - الصف " + (GRADES[c.grade] || c.grade); }
+    function courseLabel(c) { if (c.stage === "general") return "الدورات - المستوى " + (GRADES[c.grade] || c.grade); return (STAGES[c.stage] || c.stage) + " - الصف " + (GRADES[c.grade] || c.grade); }
     function placeLabel(stage, grade) { return stage && grade ? courseLabel({ stage: stage, grade: grade }) : "غير محدد"; }
     function examWhen(e) { if (e.kind === "homework") return "واجب"; return e.kind === "month" ? "امتحان شهر " + (MONTHS[e.month] || "") : "امتحان حصة" + (e.sessionNo ? " رقم " + Number(e.sessionNo).toLocaleString("ar-EG") : ""); }
 

@@ -474,3 +474,11 @@ html.wow_lite .hr_hero::before{ animation: none; }
     .wow_pre{ opacity: 1 !important; transform: none !important; }
     body::before{ display: none; }
 }
+
+/* ---------- صفحة «الدورات»: كروت كورسات المستويات (بيتحكم فيها المدرس من اللوحة) ---------- */
+.lv_courses{ display:grid; grid-column:1 / -1; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:24px; align-content:start; }
+.lv_courses > div{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:10px; box-shadow:0 4px 12px rgba(7,37,29,.06); transition:transform .3s, box-shadow .3s; text-align:center; }
+.lv_courses > div:hover{ transform:translateY(-3px); box-shadow:0 10px 20px rgba(7,37,29,.12); }
+.buy_btn{ display:inline-block; margin:6px auto 4px; padding:9px 18px; background:#07251D; color:#fff !important; border-radius:999px; font-weight:700; text-decoration:none; font-size:15px; }
+.buy_btn:hover{ filter:brightness(1.15); }
+.card_price{ font-weight:800; color:#0a6b4f; margin:2px 0; }
