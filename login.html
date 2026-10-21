@@ -3,75 +3,91 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta name="theme-color" content="#07251D">
+        <meta name="theme-color" content="#f0f0f0">
         <meta name="robots" content="noindex">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Reem+Kufi:wght@500;700&display=swap">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600&display=swap">
         <link rel="stylesheet" href="css/login-hero.css">
         <title>الادهم - تسجيل الدخول</title>
     </head>
     <body>
-        <video id="lh_video" class="lh_video" muted playsinline preload="auto" poster="image/hero.jpg"
-               src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_041744_63efcd78-bf7d-4039-99e2-2461e8a61903.mp4"></video>
-        <div class="lh_shade"></div>
+        <main class="rv_wrap">
+            <section class="rv_section">
+                <video class="rv_video" autoplay muted loop playsinline
+                       src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260428_193507_4286c423-2fd9-4efd-92bd-91a939453fc1.mp4"></video>
 
-        <header class="lh_nav">
-            <a href="index.html" class="lh_logo"><span class="lh_logo_t">الأدهم®</span><span class="lh_logo_s">✳︎</span></a>
-            <nav class="lh_links" aria-label="التنقل">
-                <a href="index.html">الرئيسية</a>
-                <a href="index2.html">الدورات</a>
-                <a href="login.html" aria-current="page">حسابي</a>
-            </nav>
-            <a href="register.html" class="lh_cta">إنشاء حساب</a>
-            <button class="lh_burger" id="lh_burger" aria-label="القائمة" aria-expanded="false"><span></span><span></span><span></span></button>
-        </header>
-        <div class="lh_ov" id="lh_ov">
-            <a href="index.html">الرئيسية</a>
-            <a href="index2.html">الدورات</a>
-            <a href="login.html">حسابي</a>
-            <a href="register.html" class="u">إنشاء حساب</a>
-        </div>
+                <div class="rv_layer">
+                    <nav class="rv_nav" aria-label="التنقل">
+                        <div class="rv_sp"></div>
+                        <ul class="rv_menu">
+                            <li><a href="index.html">الرئيسية</a></li>
+                            <li><a href="index2.html">الدورات</a></li>
+                            <li><a href="login.html" aria-current="page">حسابي</a></li>
+                        </ul>
+                        <a href="index.html" class="rv_mlogo"><span>الأدهم</span></a>
+                        <div class="rv_navr">
+                            <a href="register.html" class="rv_btn">
+                                <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+                                <span class="t">إنشاء حساب</span>
+                            </a>
+                        </div>
+                    </nav>
 
-        <main class="lh_hero">
-            <div class="lh_copy">
-                <p class="lh_intro">أهلاً بيك في الأدهم،<br>منصة اللغة العربية</p>
-                <p class="lh_type"><span id="lh_tw" data-text="نورتنا. سجّل دخولك وكمّل من حيث وقفت."></span><span id="lh_cursor" class="lh_cursor"></span></p>
-                <div class="lh_pills" id="lh_pills">
-                    <a class="lh_pill" href="register.html">إنشاء حساب جديد</a>
-                    <a class="lh_pill" href="index2.html">شوف الدورات</a>
-                    <a class="lh_pill" href="index.html">الرئيسية</a>
-                    <a class="lh_pill" href="https://wa.me/201289695977" target="_blank" rel="noopener">كلّمنا واتساب</a>
-                    <button type="button" class="lh_pill out" id="lh_copy" data-copy="01289695977">
-                        <span>رقمنا: <u dir="ltr">01289695977</u></span>
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><rect x="3" y="3" width="12" height="12" rx="2"/></svg>
-                    </button>
-                </div>
-            </div>
+                    <div class="rv_text">
+                        <div class="rv_badge">
+                            <svg class="i" viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+                            <span>منصة اللغة العربية</span>
+                        </div>
+                        <h1 class="rv_h1">أهلاً بيك في الأدهم</h1>
+                        <p class="rv_p">سجّل دخولك وكمّل دروسك واختباراتك من حيث وقفت.</p>
 
-            <section class="lh_card" id="lh_card">
-                <h1>تسجيل الدخول</h1>
-                <p class="ac_sub">ادخل برقم تليفونك (أو الإيميل) وكلمة السر.</p>
-                <form class="ac_form" id="ac_login" novalidate>
-                    <label for="ac_email">رقم التليفون أو الإيميل</label>
-                    <input type="text" id="ac_email" autocomplete="username" inputmode="text" dir="ltr" maxlength="254" required>
-                    <label for="ac_pass">كلمة السر</label>
-                    <input type="password" id="ac_pass" autocomplete="current-password" required>
-                    <div id="ac_codebox" class="ac_hidden">
-                        <label for="ac_code">كود التحقق (من تطبيق المصادقة، أو كود الطوارئ)</label>
-                        <input type="text" id="ac_code" autocomplete="one-time-code" inputmode="text" dir="ltr" maxlength="12">
+                        <section class="rv_card">
+                            <h1>تسجيل الدخول</h1>
+                            <p class="ac_sub">ادخل برقم تليفونك (أو الإيميل) وكلمة السر.</p>
+                            <form class="ac_form" id="ac_login" novalidate>
+                                <label for="ac_email">رقم التليفون أو الإيميل</label>
+                                <input type="text" id="ac_email" autocomplete="username" inputmode="text" dir="ltr" maxlength="254" required>
+                                <label for="ac_pass">كلمة السر</label>
+                                <input type="password" id="ac_pass" autocomplete="current-password" required>
+                                <div id="ac_codebox" class="ac_hidden">
+                                    <label for="ac_code">كود التحقق (من تطبيق المصادقة، أو كود الطوارئ)</label>
+                                    <input type="text" id="ac_code" autocomplete="one-time-code" inputmode="text" dir="ltr" maxlength="12">
+                                </div>
+                                <p class="ac_msg" id="ac_err" role="alert"></p>
+                                <button type="submit" class="ac_btn" id="ac_go">دخول</button>
+                            </form>
+                            <p class="ac_sub">لسه معندكش حساب؟ <a href="register.html">إنشاء حساب جديد</a></p>
+                            <p class="ac_sub">نسيت كلمة السر؟ كلّم المدرس وهيبعتلك رابط جديد.</p>
+                        </section>
                     </div>
-                    <p class="ac_msg" id="ac_err" role="alert"></p>
-                    <button type="submit" class="ac_btn" id="ac_go">دخول</button>
-                </form>
-                <p class="ac_sub">لسه معندكش حساب؟ <a href="register.html">إنشاء حساب جديد</a></p>
-                <p class="ac_sub">نسيت كلمة السر؟ كلّم المدرس وهيبعتلك رابط جديد.</p>
+
+                    <div class="rv_bl">
+                        <div>
+                            <div class="big">محتاج مساعدة؟</div>
+                            <div class="sm">تواصل معنا</div>
+                        </div>
+                        <a class="btn2" href="https://wa.me/201289695977" target="_blank" rel="noopener">
+                            <span class="ic"><svg class="i" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></span>
+                            <span class="t">واتساب</span>
+                        </a>
+                    </div>
+
+                    <a class="rv_br" href="index2.html">
+                        <div class="m1"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M56 56V0C56 30.9279 30.9279 56 0 56H56Z" fill="#f0f0f0"/></svg></div>
+                        <div class="m2"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M56 56H0C30.9279 56 56 30.9279 56 0V56Z" fill="#f0f0f0"/></svg></div>
+                        <div class="circ"><svg class="i" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></svg></div>
+                        <div>
+                            <span class="ttl">الدورات</span>
+                            <div class="sub"><span>شوف كل الدورات</span><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+                        </div>
+                    </a>
+                </div>
             </section>
         </main>
 
         <script src="config.js"></script>
         <script src="api.js"></script>
         <script src="login.js"></script>
-        <script src="login-hero.js"></script>
     </body>
 </html>
