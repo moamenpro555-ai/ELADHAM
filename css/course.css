@@ -1,0 +1,66 @@
+/* ================== شكل صفحة الكورس للطالب: «نافذة التطبيق» (فيديو + قايمة الدروس + نسبة الإنجاز) ================== */
+.cz{ --cz-bg:#10123a; --cz-card:#1b1f55; --cz-blue:#2536ff; --cz-yellow:#ffd93d; --cz-ink:#fff;
+    background: var(--cz-bg); border-radius: 22px; padding: 22px; color: var(--cz-ink); box-shadow: 0 14px 34px rgba(16,18,58,.35); }
+.cz_top{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; flex-wrap:wrap; margin-bottom:16px; }
+.cz_title{ font-size: 26px; font-weight: 800; margin: 0; }
+.cz_sub{ margin: 4px 0 0; color: #aab0ff; font-size: 15px; }
+.cz_back{ border: 2px solid #3a41a8; background: transparent; color: #fff; border-radius: 12px; padding: 8px 16px; font-family: inherit; font-size: 15px; cursor: pointer; }
+.cz_back:hover{ background: #262b73; }
+
+.cz_win{ border: 3px solid var(--cz-blue); border-radius: 22px; background: #151846; padding: 0 18px 18px; box-shadow: 10px 10px 0 var(--cz-yellow); margin: 0 0 12px 10px; }
+.cz_dots{ display:flex; gap:8px; padding: 14px 2px 12px; }
+.cz_dots i{ width:12px; height:12px; border-radius:50%; background:#2ecc71; display:block; }
+.cz_dots i:nth-child(2){ background: var(--cz-yellow); }
+.cz_dots i:nth-child(3){ background:#ff4d5e; }
+
+.cz_grid{ display:grid; grid-template-columns: 300px 1fr; gap: 18px; align-items: start; }
+.cz_side{ display:flex; flex-direction:column; gap:12px; }
+.cz_h{ font-size: 15px; color: #aab0ff; margin: 4px 0 0; font-weight: 700; }
+.cz_ringrow{ display:flex; align-items:center; gap:14px; background: var(--cz-card); border-radius: 14px; padding: 12px; }
+.cz_ringrow small{ display:block; color:#aab0ff; margin-top:2px; }
+.cz_ring{ --p:0; width:70px; height:70px; border-radius:50%; flex:none; display:grid; place-items:center;
+    background: conic-gradient(var(--cz-yellow) calc(var(--p) * 1%), #2b3070 0); position: relative; }
+.cz_ring::before{ content:""; position:absolute; inset:8px; border-radius:50%; background: var(--cz-card); }
+.cz_ring span{ position:relative; font-weight:800; font-size:15px; }
+
+/* قايمة الدروس */
+.cz .ac_list{ gap: 8px; max-height: 560px; overflow-y: auto; padding: 2px; }
+.cz .ac_lesson{ background: var(--cz-card); border: 2px solid transparent; color: #fff; border-radius: 12px; padding: 12px; font-weight: 600; line-height: 1.5; }
+.cz .ac_lesson:hover{ border-color: #3a41a8; }
+.cz .ac_lesson .ic{ color: #8f96ff; }
+.cz .ac_lesson.is_done .ic{ color: #43e08a; }
+.cz .ac_lesson.is_on{ background: var(--cz-yellow); color: #12123a; border-color: var(--cz-yellow); }
+.cz .ac_lesson.is_on .ic{ color: #12123a; }
+.cz .ac_lesson.is_locked{ background: #161a48; color: #7f86c9; opacity: .8; }
+.cz .ac_pill{ background: rgba(255,255,255,.14); border-color: transparent; color: inherit; margin-inline-start: auto; }
+.cz .ac_lesson.is_on .ac_pill{ background: rgba(18,18,58,.14); }
+.cz .ac_empty{ color: #aab0ff; }
+
+/* المشغّل */
+.cz .ac_player{ background: linear-gradient(160deg, #2536ff, #1a24c8); border-radius: 16px; padding: 16px; min-height: 300px; }
+.cz .ac_player > .ac_h2{ color:#fff; font-size: 22px; margin: 0 0 6px; }
+.cz .ac_player > .ac_sub{ color:#d6d9ff; }
+.cz .ac_player > .ac_empty{ color:#d6d9ff; }
+.cz .ac_player video, .cz .ac_embed, .cz .ac_vp_wrap{ border-radius: 14px; }
+.cz .ac_vp_bar{ background: #0d0f33; }
+.cz .ac_vp_bar input[type=range]{ accent-color: var(--cz-yellow); }
+.cz_idle{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; min-height: 260px; color:#fff; font-size:18px; font-weight:700; }
+.cz_play{ width:84px; height:84px; border-radius:50%; background: var(--cz-yellow); color:#12123a; display:grid; place-items:center; font-size:32px; padding-inline-start:4px; box-shadow: 0 8px 20px rgba(0,0,0,.3); }
+.cz .ac_player .ac_btn.b_line{ background: transparent; border-color: #fff; color:#fff; }
+.cz .ac_player .ac_btn.b_gold{ background: var(--cz-yellow); color:#12123a; border-color: var(--cz-yellow); }
+
+/* كارت الامتحان تحت الفيديو: أبيض بخيارات بحدود زي الصورة */
+.cz .ac_quizcard{ background:#fff; border: 0; border-radius: 16px; color:#12123a; margin-top: 14px; }
+.cz .ac_quizcard .ac_h2{ color:#12123a; }
+.cz .ac_quizcard .ac_opt span{ border: 2px solid #12123a; border-radius: 12px; background:#fff; color:#12123a; font-weight: 700; }
+.cz .ac_quizcard .ac_opt input:checked + span{ background: var(--cz-blue); border-color: var(--cz-blue); color:#fff; }
+.cz .ac_quizcard .ac_btn.b_dark{ background: var(--cz-yellow); color:#12123a; border-color: var(--cz-yellow); font-weight: 800; }
+
+@media (max-width: 800px){
+    .cz{ padding: 14px; border-radius: 16px; }
+    .cz_win{ padding: 0 10px 12px; box-shadow: 6px 6px 0 var(--cz-yellow); margin-left: 6px; }
+    .cz_grid{ grid-template-columns: 1fr; }
+    .cz_main{ order: -1; }
+    .cz_title{ font-size: 21px; }
+    .cz .ac_list{ max-height: 320px; }
+}

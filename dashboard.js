@@ -231,16 +231,38 @@
         E.clear(root);
         root.appendChild(header());
         var c = current.course;
-        var player = h("div", { class: "ac_player", id: "ac_player" }, [h("p", { class: "ac_empty", text: "اختار درس من القايمة." })]);
+        var player = h("div", { class: "ac_player", id: "ac_player" }, [
+            h("div", { class: "cz_idle" }, [h("div", { class: "cz_play", "aria-hidden": "true", text: "▶" }), h("p", { text: "اختار درس من القايمة وابدأ" })])]);
         var list = h("ul", { class: "ac_list", id: "ac_lessons" }, current.lessons.map(function (l) { return h("li", null, [lessonBtn(l)]); }));
         if (!current.lessons.length) list = h("p", { class: "ac_empty", text: "مفيش دروس منشورة في الكورس ده لسه." });
-        root.appendChild(h("div", { class: "ac_card" }, [
-            h("div", { class: "ac_top" }, [
-                h("div", null, [h("h2", { class: "ac_h1", text: c.title }), h("p", { class: "ac_sub", text: E.courseLabel(c) })]),
-                h("button", { type: "button", class: "ac_btn b_line", text: "رجوع للكورسات", onclick: showHome })
+        // شكل «نافذة التطبيق»: الفيديو والامتحان على جنب، وقايمة الدروس ونسبة الإنجاز على الجنب التاني
+        root.appendChild(h("div", { class: "cz" }, [
+            h("div", { class: "cz_top" }, [
+                h("div", null, [h("h2", { class: "cz_title", text: c.title }), h("p", { class: "cz_sub", text: E.courseLabel(c) })]),
+                h("button", { type: "button", class: "cz_back", text: "رجوع للكورسات", onclick: showHome })
+            ]),
+            h("div", { class: "cz_win" }, [
+                h("div", { class: "cz_dots", "aria-hidden": "true" }, [h("i"), h("i"), h("i")]),
+                h("div", { class: "cz_grid" }, [
+                    h("div", { class: "cz_side" }, [
+                        h("div", { class: "cz_ringrow" }, [h("div", { class: "cz_ring", id: "cz_ring" }, [h("span", { id: "cz_pct", text: "" })]),
+                            h("div", null, [h("b", { text: "تقدّمك في الكورس" }), h("small", { id: "cz_cnt", text: "" })])]),
+                        h("h2", { class: "cz_h", text: "الدروس" }), list]),
+                    h("div", { class: "cz_main" }, [player])
+                ])
             ])
         ]));
-        root.appendChild(h("div", { class: "ac_split" }, [h("div", { class: "ac_card" }, [player]), h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "الدروس" }), list])]));
+        updateRing();
+    }
+
+    // دايرة نسبة الإنجاز (الدروس المكتملة من كل الدروس)
+    function updateRing() {
+        var ring = document.getElementById("cz_ring"); if (!ring || !current) return;
+        var all = current.lessons.length, done = current.lessons.filter(function (x) { return x.completed; }).length;
+        var pct = all ? Math.round(done * 100 / all) : 0;
+        ring.style.setProperty("--p", String(pct));
+        document.getElementById("cz_pct").textContent = E.num(pct) + "٪";
+        document.getElementById("cz_cnt").textContent = E.num(done) + " من " + E.num(all) + " درس";
     }
 
     function lessonBtn(l) {
@@ -271,6 +293,7 @@
                 ul.appendChild(li);
                 if (activeLesson && x.id === activeLesson.id) { li.firstChild.classList.add("is_on"); activeLesson = x; }
             });
+            updateRing();
         } catch (e) { /* القايمة هتتحدّث في المرة الجاية */ }
     }
 
