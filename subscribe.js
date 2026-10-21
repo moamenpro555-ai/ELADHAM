@@ -78,6 +78,29 @@
         return box("الدفع عن طريق كود", [f]);
     }
 
+    // Receipts are limited to 2 MB on the server; phone photos are bigger, so a big picture is re-encoded smaller here first.
+    function shrink(f) {
+        return new Promise(function (resolve, reject) {
+            var url = URL.createObjectURL(f), img = new Image();
+            img.onerror = function () { URL.revokeObjectURL(url); reject(new Error("مقدرناش نقرا الصورة. جرّب صورة تانية.")); };
+            img.onload = function () {
+                URL.revokeObjectURL(url);
+                var scale = Math.min(1, 1600 / Math.max(img.width, img.height)), q = 0.85;
+                var cv = document.createElement("canvas");
+                cv.width = Math.round(img.width * scale); cv.height = Math.round(img.height * scale);
+                cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+                (function step() {
+                    cv.toBlob(function (blob) {
+                        if (!blob) { reject(new Error("فشل تصغير الصورة.")); return; }
+                        if (blob.size <= 1.9 * 1024 * 1024 || q <= 0.4) { blob.size > 1.95 * 1024 * 1024 ? reject(new Error("الصورة كبيرة. صوّر الإيصال تاني.")) : resolve(blob); return; }
+                        q -= 0.15; step();
+                    }, "image/jpeg", q);
+                })();
+            };
+            img.src = url;
+        });
+    }
+
     function payBox(c, pay) {
         var sender = h("input", { id: "sb_sender", type: "tel", inputmode: "numeric", dir: "ltr", maxlength: "11", placeholder: "01012345678" });
         var file = h("input", { id: "sb_file", type: "file", accept: "image/png,image/jpeg,image/webp" });
@@ -98,9 +121,11 @@
             if (!/^01[0125]\d{8}$/.test(ph)) { msg.textContent = "اكتب رقم المحفظة صح (11 رقم)."; return; }
             var f = file.files && file.files[0];
             if (!f) { msg.textContent = "اختار صورة الإيصال."; return; }
-            if (f.size > 6 * 1024 * 1024) { msg.textContent = "الصورة أكبر من 6 ميجا."; return; }
             b.disabled = true;
-            try { await E.upload("POST", "/api/courses/" + encodeURIComponent(c.id) + "/purchase?phone=" + ph, f); load(); }
+            try {
+                if (f.size > 1.5 * 1024 * 1024) f = await shrink(f);
+                await E.upload("POST", "/api/courses/" + encodeURIComponent(c.id) + "/purchase?phone=" + ph, f); load();
+            }
             catch (e) { msg.textContent = e.message || "فشل الإرسال"; b.disabled = false; }
         });
         return box("الدفع عن طريق فودافون كاش", [

@@ -44,19 +44,21 @@
                 h("div", null, [h("h1", { class: "ac_h1", text: "لوحة المدرس" }), h("p", { class: "ac_sub", text: user.name + " - " + user.email, dir: "ltr" })]),
                 h("div", { class: "ac_row" }, [
                     h("button", { type: "button", class: "ac_btn b_line", text: "تغيير كلمة السر", onclick: function () { pw.classList.toggle("ac_hidden"); } }),
+                    h("button", { type: "button", class: "ac_btn b_line", id: "tfa_btn", text: "التحقق بخطوتين", onclick: function () { sec.classList.toggle("ac_hidden"); if (!sec.classList.contains("ac_hidden") && ui.securityPanel) ui.securityPanel(sec); } }),
                     h("button", { type: "button", class: "ac_btn b_dark", text: "تسجيل الخروج", onclick: function () { E.logout(); } })
                 ])
             ]),
-            (function () { return (pw = h("div", { class: "ac_hidden" }, [E.passwordForm({})])); })()
+            (function () { return (pw = h("div", { class: "ac_hidden" }, [E.passwordForm({})])); })(),
+            (function () { return (sec = h("div", { class: "ac_hidden", id: "tfa_panel" })); })()
         ]));
-        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["registrations", "سجل بيانات الطلاب"], ["sales", "سجل المبيعات"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
+        var tabs = h("div", { class: "ac_tabs", role: "tablist" }, [["courses", "الكورسات"], ["students", "الطلاب"], ["sessions", "الحصص"], ["registrations", "سجل بيانات الطلاب"], ["sales", "سجل المبيعات"], ["exams", "الامتحانات"], ["results", "السجل"]].map(function (t) {
             return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(tab === t[0]), text: t[1] + (t[0] === "registrations" && pendingCount ? " (" + E.num(pendingCount) + " جديد)" : "") + (t[0] === "sales" && ui.pendingSales ? " (" + E.num(ui.pendingSales) + " جديد)" : ""), onclick: function () { tab = t[0]; render(); } });
         }));
         root.appendChild(tabs);
         body = h("div", { id: "ac_body" });
         root.appendChild(body);
     }
-    var pw;
+    var pw, sec;
     var pendingCount = 0, regFilter = "pending", regQuery = "";
 
     async function render() {
@@ -116,7 +118,7 @@
         var desc = h("textarea", { id: "cf_desc", maxlength: "2000" }); desc.value = c ? c.description : "";
         var stage = stageSelect("cf_stage", c ? c.stage : "secondary");
         var grade = gradeSelect("cf_grade", c ? c.grade : 1);
-        var sect = h("select", { id: "cf_sect" }, Object.keys(E.SECTIONS).map(function (k) { return option(k, E.SECTIONS[k], (c ? c.section : "courses") === k); }));
+        var sect = h("select", { id: "cf_sect" }, Object.keys(E.SECTIONS).filter(function (k) { return k !== "sessions" || (c && c.section === "sessions"); }).map(function (k) { return option(k, E.SECTIONS[k], (c ? c.section : "courses") === k); }));
         var MODES = [["free", "مجاني (أي طالب يفتحه بضغطة)"], ["paid", "فوري (دفع بفودافون كاش + صورة الإيصال)"], ["code", "كود (الطالب بيدخل كود إنت إديته له)"], ["code_or_paid", "كود وفوري معًا"]];
         var mode = h("select", { id: "cf_mode" }, MODES.map(function (m) { return option(m[0], m[1], (c ? c.accessMode : "code") === m[0]); }));
         var price = h("input", { id: "cf_price", type: "number", min: "0", max: "100000", step: "1", value: c ? String(c.price || 0) : "0", dir: "ltr" });
@@ -360,7 +362,7 @@
         var d = null;
         await run(async function () { d = await E.call("GET", "/api/teacher/registrations?status=" + (regFilter === "all" ? "" : regFilter) + (regQuery ? "&q=" + encodeURIComponent(regQuery) : "")); });
         if (!d) return;
-        if (pendingCount !== d.counts.pending) { pendingCount = d.counts.pending; var t0 = document.querySelectorAll(".ac_tab")[2]; if (t0) t0.textContent = "سجل بيانات الطلاب" + (pendingCount ? " (" + E.num(pendingCount) + " جديد)" : ""); }
+        if (pendingCount !== d.counts.pending) { pendingCount = d.counts.pending; var t0 = Array.prototype.filter.call(document.querySelectorAll(".ac_tab"), function (t) { return t.textContent.indexOf("سجل بيانات الطلاب") === 0; })[0]; if (t0) t0.textContent = "سجل بيانات الطلاب" + (pendingCount ? " (" + E.num(pendingCount) + " جديد)" : ""); }
         var filters = [["pending", "مستني التفعيل", d.counts.pending], ["approved", "مفعّل", d.counts.approved], ["rejected", "مرفوض", d.counts.rejected], ["all", "الكل", d.counts.pending + d.counts.approved + d.counts.rejected]];
         var bar = h("div", { class: "ac_tabs", role: "tablist" }, filters.map(function (f) {
             return h("button", { type: "button", class: "ac_tab", role: "tab", "aria-selected": String(regFilter === f[0]), text: f[1] + " (" + E.num(f[2]) + ")", onclick: function () { regFilter = f[0]; registrationsView(); } });

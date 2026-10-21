@@ -22,9 +22,11 @@
         if (!email || !pass) { err.textContent = "اكتب رقم تليفونك (أو الإيميل) وكلمة السر."; return; }
         go.disabled = true;
         try {
-            var u = await E.login(email, pass);
+            var codeBox = document.getElementById("ac_codebox"), codeIn = document.getElementById("ac_code");
+            var u = await E.login(email, pass, codeIn.value.trim());
             location.replace(nextPage(u));
         } catch (e) {
+            if (e && e.code === "TOTP_REQUIRED") { codeBox.classList.remove("ac_hidden"); codeIn.focus(); }
             err.textContent = e.message || "حصل خطأ، جرّب تاني.";
             go.disabled = false;
         }

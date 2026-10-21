@@ -138,6 +138,7 @@
             box.appendChild(h("h2", { class: "ac_h2", text: "كورساتي" }));
             if (!mine.length) box.appendChild(h("p", { class: "ac_empty", text: "لسه مفيش كورسات مفعّلة على حسابك. اشترك في كورس من القايمة اللي تحت." }));
             else box.appendChild(h("div", { class: "ac_grid" }, mine.map(courseCard)));
+            root.appendChild(await sessionsCard());
             root.appendChild(await examsCard());
             if (others.length) {
                 var more = h("div", { class: "ac_card" }, [h("h2", { class: "ac_h2", text: "كورسات تانية متاحة" }),
@@ -146,6 +147,20 @@
                 root.appendChild(more);
             }
         } catch (e) { E.clear(box); box.appendChild(h("p", { class: "ac_msg", text: e.message })); }
+    }
+
+    // ---------- الحصص (فيديوهات) ----------
+    async function sessionsCard() {
+        var card = h("div", { class: "ac_card", id: "ac_sessions" }, [h("h2", { class: "ac_h2", text: "الحصص" })]);
+        try {
+            var d = await E.call("GET", "/api/sessions");
+            if (!d.sessions.length) { card.appendChild(h("p", { class: "ac_empty", text: "مفيش حصص منشورة لصفك دلوقتي." })); return card; }
+            card.appendChild(h("div", { class: "ac_grid" }, d.sessions.map(function (v) {
+                return h("a", { class: "ac_course", href: "session.html?id=" + encodeURIComponent(v.id), style: "text-decoration:none" }, [
+                    h("span", { class: "ac_course_t", text: v.title }), v.description ? h("span", { class: "ac_course_m", text: v.description }) : null, h("span", { class: "ac_pill", text: "حصة فيديو" })]);
+            })));
+        } catch (e) { card.appendChild(h("p", { class: "ac_msg", text: e.message })); }
+        return card;
     }
 
     // ---------- الامتحانات ----------

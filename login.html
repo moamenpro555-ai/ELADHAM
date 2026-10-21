@@ -33,6 +33,10 @@
                     <input type="text" id="ac_email" autocomplete="username" inputmode="text" dir="ltr" maxlength="254" required>
                     <label for="ac_pass">كلمة السر</label>
                     <input type="password" id="ac_pass" autocomplete="current-password" required>
+                    <div id="ac_codebox" class="ac_hidden">
+                        <label for="ac_code">كود التحقق (من تطبيق المصادقة، أو كود الطوارئ)</label>
+                        <input type="text" id="ac_code" autocomplete="one-time-code" inputmode="text" dir="ltr" maxlength="12">
+                    </div>
                     <p class="ac_msg" id="ac_err" role="alert"></p>
                     <button type="submit" class="ac_btn b_dark" id="ac_go">دخول</button>
                 </form>

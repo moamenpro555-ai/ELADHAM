@@ -30,18 +30,33 @@
         return d;
     }
 
+    // حصة فيديو (مش كورس): بتفتح صفحة المشاهدة، وهناك لازم الطالب يكون مسجّل دخول ومن نفس المرحلة والصف
+    function sessionCard(v, n) {
+        var d = el("div"); d.setAttribute("data-session-id", v.id);
+        var a = el("a"); a.href = "session.html?id=" + encodeURIComponent(v.id);
+        var img = el("img", "exam" + n); img.alt = v.title; img.loading = "lazy"; img.src = "image/exam.svg";
+        a.appendChild(img); d.appendChild(a);
+        d.appendChild(el("p", "name" + n, v.title));
+        d.appendChild(el("p", "note" + n, (v.description ? v.description + " - " : "") + "حصة فيديو. المشاهدة للطلاب المسجّلين."));
+        var b = el("a", "buy_btn", "شاهد الحصة"); b.href = a.href; d.appendChild(b);
+        return d;
+    }
+
     async function init() {
         var parts = document.querySelectorAll('[data-area="courses"], [data-area="sessions"], [data-area="homework"]');
         if (!parts.length) return;
-        var failed = false, list = [];
+        var failed = false, list = [], vids = [];
         try { list = (await E.call("GET", "/api/public/courses?stage=" + encodeURIComponent(stage))).courses; }
         catch (e) { failed = true; }
+        try { vids = (await E.call("GET", "/api/public/sessions?stage=" + encodeURIComponent(stage))).sessions; } catch (e) { vids = []; }
         Array.prototype.forEach.call(parts, function (p) {
             var grade = Number(p.getAttribute("data-grade")), area = p.getAttribute("data-area");
             var mine = list.filter(function (c) { return c.grade === grade && c.section === area; });
             while (p.firstChild) p.removeChild(p.firstChild);
             if (failed) { p.appendChild(el("p", "hint" + grade, "مش قادر أحمّل القسم ده دلوقتي. جرّب تحدّث الصفحة.")); return; }
-            if (!mine.length) { p.appendChild(el("p", "hint" + grade, "لسه مفيش " + NAMES[area] + " هنا.")); return; }
+            var myVids = area === "sessions" ? vids.filter(function (v) { return v.grade === grade; }) : [];
+            if (!mine.length && !myVids.length) { p.appendChild(el("p", "hint" + grade, "لسه مفيش " + NAMES[area] + " هنا.")); return; }
+            myVids.forEach(function (v) { p.appendChild(sessionCard(v, grade)); });
             mine.forEach(function (c) { p.appendChild(card(c, grade)); });
         });
     }

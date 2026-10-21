@@ -1,6 +1,8 @@
 // ================== api.js : الاتصال بالسيرفر + أدوات مشتركة لصفحات الحساب ==================
 (function () {
     "use strict";
+    // Anti click-jacking: if another site loads this page inside a frame, break out of it.
+    try { if (window.top !== window.self) { window.top.location = window.self.location; } } catch (e) { document.documentElement.style.display = "none"; }
     var BASE = String(window.ELADHAM_API || "").replace(/\/$/, "");
     var csrf = null;
 
@@ -134,8 +136,10 @@
                 throw e;
             }
         },
-        login: async function (identifier, password) {
-            var d = await call("POST", "/api/auth/login", { identifier: identifier, password: password });
+        login: async function (identifier, password, code) {
+            var body = { identifier: identifier, password: password };
+            if (code) body.code = code;
+            var d = await call("POST", "/api/auth/login", body);
             csrf = d.csrfToken;
             return d.user;
         },
