@@ -5,6 +5,12 @@
     try { if (window.top !== window.self) { window.top.location = window.self.location; } } catch (e) { document.documentElement.style.display = "none"; }
     var BASE = String(window.ELADHAM_API || "").replace(/\/$/, "");
     var csrf = null;
+    // سفاري على الآيفون بيمنع الكوكيز بين دومينين مختلفين (الموقع والسيرفر)، فالدخول بيفشل. لو حصل كده بنحتفظ بتوكن الجلسة
+    // ونبعته في هيدر Authorization. لو الكوكيز شغّالة (أغلب المتصفحات) التوكن ده عمره ما بيتخزّن.
+    var TOK = "eladham_tok", tok = null;
+    try { tok = localStorage.getItem(TOK); } catch (e) { tok = null; }
+    function setTok(v) { tok = v || null; try { if (tok) localStorage.setItem(TOK, tok); else localStorage.removeItem(TOK); } catch (e) { /* التخزين مقفول */ } }
+    function withAuth(headers) { if (tok) headers["Authorization"] = "Bearer " + tok; return headers; }
 
     var STAGES = { primary: "ابتدائي", prep: "إعدادي", secondary: "ثانوي", general: "الدورات" };
     var GRADES = ["", "الأول", "الثاني", "الثالث", "الرابع", "الخامس", "السادس"];
@@ -20,6 +26,7 @@
             opts.body = JSON.stringify(body);
         }
         if (method !== "GET" && csrf) opts.headers["X-CSRF-Token"] = csrf;
+        withAuth(opts.headers);
         var res;
         try {
             res = await fetch(BASE + path, opts);
@@ -65,6 +72,7 @@
     async function upload(method, path, file) {
         var headers = { "Content-Type": "application/octet-stream" };
         if (csrf) headers["X-CSRF-Token"] = csrf;
+        withAuth(headers);
         var res;
         try { res = await fetch(BASE + path, { method: method, credentials: "include", headers: headers, body: file }); }
         catch (e) { throw { code: "NETWORK", status: 0, message: "مش قادر أوصل للسيرفر. اتأكد من النت وجرّب تاني." }; }
@@ -77,7 +85,7 @@
     }
     // بيجيب ملف محمي (بالكوكي) ويرجّعه كرابط مؤقت يتحط في img أو iframe
     async function blobUrl(path) {
-        var res = await fetch(BASE + path, { credentials: "include" });
+        var res = await fetch(BASE + path, { credentials: "include", headers: withAuth({}) });
         if (!res.ok) throw { status: res.status, message: "مقدرتش أحمّل الملف" };
         return URL.createObjectURL(await res.blob());
     }
@@ -139,12 +147,17 @@
         login: async function (identifier, password, code) {
             var body = { identifier: identifier, password: password };
             if (code) body.code = code;
+            setTok(null);
             var d = await call("POST", "/api/auth/login", body);
             csrf = d.csrfToken;
+            // هل الكوكي اتحفظت؟ لو لأ (آيفون) نستخدم التوكن
+            try { await call("GET", "/api/auth/me"); }
+            catch (e) { if (e && e.status === 401 && d.sessionToken) setTok(d.sessionToken); }
             return d.user;
         },
         logout: async function () {
             try { await call("POST", "/api/auth/logout", {}); } catch (e) { /* even if it fails, leave */ }
+            setTok(null);
             location.replace("login.html");
         },
         // نموذج تغيير كلمة السر (بيتستخدم في لوحة الطالب والمدرس)
