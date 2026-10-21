@@ -4,29 +4,53 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="theme-color" content="#07251D">
+        <meta name="robots" content="noindex">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <meta name="robots" content="noindex">
-        <link rel="stylesheet" href="css/plat.css">
-        <link rel="stylesheet" href="css/media%20(1).css">
-        <link rel="stylesheet" href="css/dash.css">
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&display=swap">
-        <link rel="stylesheet" href="css/wow.css?v=1">
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Reem+Kufi:wght@500;700&display=swap">
+        <link rel="stylesheet" href="css/login-hero.css">
         <title>الادهم - تسجيل الدخول</title>
     </head>
     <body>
-        <nav>
-            <div class="logo"><div class="brand"><span class="brand_n">الأدهم</span><small class="brand_s">منصة اللغة العربية</small></div></div>
-            <div class="start_1">
-                <div class="main"><a href="index.html" class="link">الرئيسية</a></div>
-                <div class="turn"><a href="index2.html" class="link" id="link2">الدورات</a></div>
-                <div class="acct"><a href="login.html" class="link" id="link4" aria-current="page">حسابي</a></div>
+        <video id="lh_video" class="lh_video" muted playsinline preload="auto" poster="image/hero.jpg"
+               src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260826_041744_63efcd78-bf7d-4039-99e2-2461e8a61903.mp4"></video>
+        <div class="lh_shade"></div>
+
+        <header class="lh_nav">
+            <a href="index.html" class="lh_logo"><span class="lh_logo_t">الأدهم®</span><span class="lh_logo_s">✳︎</span></a>
+            <nav class="lh_links" aria-label="التنقل">
+                <a href="index.html">الرئيسية</a>
+                <a href="index2.html">الدورات</a>
+                <a href="login.html" aria-current="page">حسابي</a>
+            </nav>
+            <a href="register.html" class="lh_cta">إنشاء حساب</a>
+            <button class="lh_burger" id="lh_burger" aria-label="القائمة" aria-expanded="false"><span></span><span></span><span></span></button>
+        </header>
+        <div class="lh_ov" id="lh_ov">
+            <a href="index.html">الرئيسية</a>
+            <a href="index2.html">الدورات</a>
+            <a href="login.html">حسابي</a>
+            <a href="register.html" class="u">إنشاء حساب</a>
+        </div>
+
+        <main class="lh_hero">
+            <div class="lh_copy">
+                <p class="lh_intro">أهلاً بيك في الأدهم،<br>منصة اللغة العربية</p>
+                <p class="lh_type"><span id="lh_tw" data-text="نورتنا. سجّل دخولك وكمّل من حيث وقفت."></span><span id="lh_cursor" class="lh_cursor"></span></p>
+                <div class="lh_pills" id="lh_pills">
+                    <a class="lh_pill" href="register.html">إنشاء حساب جديد</a>
+                    <a class="lh_pill" href="index2.html">شوف الدورات</a>
+                    <a class="lh_pill" href="index.html">الرئيسية</a>
+                    <a class="lh_pill" href="https://wa.me/201289695977" target="_blank" rel="noopener">كلّمنا واتساب</a>
+                    <button type="button" class="lh_pill out" id="lh_copy" data-copy="01289695977">
+                        <span>رقمنا: <u dir="ltr">01289695977</u></span>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"/><rect x="3" y="3" width="12" height="12" rx="2"/></svg>
+                    </button>
+                </div>
             </div>
-        </nav>
-        <div class="ac_wrap ac_narrow">
-            <div class="ac_card">
-                <h1 class="ac_h1">تسجيل الدخول</h1>
+
+            <section class="lh_card" id="lh_card">
+                <h1>تسجيل الدخول</h1>
                 <p class="ac_sub">ادخل برقم تليفونك (أو الإيميل) وكلمة السر.</p>
                 <form class="ac_form" id="ac_login" novalidate>
                     <label for="ac_email">رقم التليفون أو الإيميل</label>
@@ -38,20 +62,16 @@
                         <input type="text" id="ac_code" autocomplete="one-time-code" inputmode="text" dir="ltr" maxlength="12">
                     </div>
                     <p class="ac_msg" id="ac_err" role="alert"></p>
-                    <button type="submit" class="ac_btn b_dark" id="ac_go">دخول</button>
+                    <button type="submit" class="ac_btn" id="ac_go">دخول</button>
                 </form>
-                <p class="ac_sub">لسه معندكش حساب؟ <a href="register.html" class="ac_a">إنشاء حساب جديد</a></p>
+                <p class="ac_sub">لسه معندكش حساب؟ <a href="register.html">إنشاء حساب جديد</a></p>
                 <p class="ac_sub">نسيت كلمة السر؟ كلّم المدرس وهيبعتلك رابط جديد.</p>
-            </div>
-        </div>
-        <footer class="foot" id="foot_1">
-            <p class="foot_2">تواصل معنا</p>
-            <a href="https://wa.me/201289695977" class="foot_3" target="_blank" rel="noopener">واتساب</a>
-            <p class="foot_4">© 2026 الادهم - جميع الحقوق محفوظة</p>
-        </footer>
+            </section>
+        </main>
+
         <script src="config.js"></script>
         <script src="api.js"></script>
         <script src="login.js"></script>
-            <script src="wow.js" defer></script>
+        <script src="login-hero.js"></script>
     </body>
 </html>
